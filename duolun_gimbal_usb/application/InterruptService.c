@@ -96,8 +96,8 @@ uint32_t RefereeInterpolationTimer = 0;
   * @retval         none
   */
 /**
-  * @brief          hal¿âCAN»Øµ÷º¯Êý,½ÓÊÕµç»úÊý¾Ý
-  * @param[in]      hcan:CAN¾ä±úÖ¸Õë
+  * @brief          halï¿½ï¿½CANï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  * @param[in]      hcan:CANï¿½ï¿½ï¿½Ö¸ï¿½ï¿½
   * @retval         none
   */
 uint16_t p;
@@ -216,6 +216,12 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             MotorProcess(rx_header.StdId, hcan, rx_data);
             break;
         }
+        case DAMIAO_PITCH_MOTOR_MASTER_ID:
+        {
+            AmmoRightMotorMotorOfflineCounterUpdate();
+            MotorProcess(rx_header.StdId, hcan, rx_data);
+            break;
+        }
         default:
         {
             break;
@@ -224,10 +230,10 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 }
 
 
-//´®¿ÚÖÐ¶Ï
+//ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 void USART3_IRQHandler(void)
 {
-    if (huart3.Instance->SR & UART_FLAG_RXNE)//½ÓÊÕµ½Êý¾Ý
+    if (huart3.Instance->SR & UART_FLAG_RXNE)//ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½
     {
         __HAL_UART_CLEAR_PEFLAG(&huart3);
     }
@@ -246,26 +252,26 @@ void USART3_IRQHandler(void)
             __HAL_DMA_DISABLE(&hdma_usart3_rx);
 
             //get receive data length, length = set_data_length - remain_length
-            //»ñÈ¡½ÓÊÕÊý¾Ý³¤¶È,³¤¶È = Éè¶¨³¤¶È - Ê£Óà³¤¶È
+            //ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ = ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ - Ê£ï¿½à³¤ï¿½ï¿½
             this_time_rx_len = SBUS_RX_BUF_NUM - hdma_usart3_rx.Instance->NDTR;
 
             //reset set_data_lenght
-            //ÖØÐÂÉè¶¨Êý¾Ý³¤¶È
+            //ï¿½ï¿½ï¿½ï¿½ï¿½è¶¨ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½
             hdma_usart3_rx.Instance->NDTR = SBUS_RX_BUF_NUM;
 
             //set memory buffer 1
-            //Éè¶¨»º³åÇø1
+            //ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1
             hdma_usart3_rx.Instance->CR |= DMA_SxCR_CT;
             
             //enable DMA
-            //Ê¹ÄÜDMA
+            //Ê¹ï¿½ï¿½DMA
             __HAL_DMA_ENABLE(&hdma_usart3_rx);
 
             if (this_time_rx_len == RC_FRAME_LENGTH)
             {
-                //´¦ÀíÒ£¿ØÆ÷Êý¾Ý
+                //ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 sbus_to_rc(0);
-                //¼ÇÂ¼Êý¾Ý½ÓÊÕÊ±¼ä
+                //ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
                 RemoteOfflineCounterUpdate();
             }
         }
@@ -277,26 +283,26 @@ void USART3_IRQHandler(void)
             __HAL_DMA_DISABLE(&hdma_usart3_rx);
 
             //get receive data length, length = set_data_length - remain_length
-            //»ñÈ¡½ÓÊÕÊý¾Ý³¤¶È,³¤¶È = Éè¶¨³¤¶È - Ê£Óà³¤¶È
+            //ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ = ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ - Ê£ï¿½à³¤ï¿½ï¿½
             this_time_rx_len = SBUS_RX_BUF_NUM - hdma_usart3_rx.Instance->NDTR;
 
             //reset set_data_lenght
-            //ÖØÐÂÉè¶¨Êý¾Ý³¤¶È
+            //ï¿½ï¿½ï¿½ï¿½ï¿½è¶¨ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½
             hdma_usart3_rx.Instance->NDTR = SBUS_RX_BUF_NUM;
 
             //set memory buffer 0
-            //Éè¶¨»º³åÇø0
+            //ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0
             DMA1_Stream1->CR &= ~(DMA_SxCR_CT);
             
             //enable DMA
-            //Ê¹ÄÜDMA
+            //Ê¹ï¿½ï¿½DMA
             __HAL_DMA_ENABLE(&hdma_usart3_rx);
 
             if (this_time_rx_len == RC_FRAME_LENGTH)
             {
-                //´¦ÀíÒ£¿ØÆ÷Êý¾Ý
+                //ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 sbus_to_rc(1);
-                //¼ÇÂ¼Êý¾Ý½ÓÊÕÊ±¼ä
+                //ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
                 RemoteOfflineCounterUpdate();
             }
         }
@@ -313,7 +319,7 @@ void USART1_IRQHandler(void)
 
   /* USER CODE END USART1_IRQn 1 */
 }
-//´®¿ÚÖÐ¶Ï
+//ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 void USART6_IRQHandler(void)
 {
 #if REMOTE_UART6==1
@@ -350,7 +356,7 @@ void USART6_IRQHandler(void)
         }
     }
 #elif REMOTE_UART6==2
-    if (huart6.Instance->SR & UART_FLAG_RXNE)//½ÓÊÕµ½Êý¾Ý
+    if (huart6.Instance->SR & UART_FLAG_RXNE)//ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½
     {
         __HAL_UART_CLEAR_PEFLAG(&huart6);
     }
@@ -369,26 +375,26 @@ void USART6_IRQHandler(void)
             __HAL_DMA_DISABLE(&hdma_usart6_rx);
 
             //get receive data length, length = set_data_length - remain_length
-            //»ñÈ¡½ÓÊÕÊý¾Ý³¤¶È,³¤¶È = Éè¶¨³¤¶È - Ê£Óà³¤¶È
+            //ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ = ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ - Ê£ï¿½à³¤ï¿½ï¿½
             this_time_rx_len = SBUS_RX_BUF_NUM - hdma_usart6_rx.Instance->NDTR;
 
             //reset set_data_lenght
-            //ÖØÐÂÉè¶¨Êý¾Ý³¤¶È
+            //ï¿½ï¿½ï¿½ï¿½ï¿½è¶¨ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½
             hdma_usart6_rx.Instance->NDTR = SBUS_RX_BUF_NUM;
 
             //set memory buffer 1
-            //Éè¶¨»º³åÇø1
+            //ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1
             hdma_usart6_rx.Instance->CR |= DMA_SxCR_CT;
             
             //enable DMA
-            //Ê¹ÄÜDMA
+            //Ê¹ï¿½ï¿½DMA
             __HAL_DMA_ENABLE(&hdma_usart6_rx);
 
             if (this_time_rx_len == RC_FRAME_LENGTH)
             {
-                //´¦ÀíÒ£¿ØÆ÷Êý¾Ý
+                //ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 ibus_to_rc(0);
-                //¼ÇÂ¼Êý¾Ý½ÓÊÕÊ±¼ä
+                //ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
                 RemoteOfflineCounterUpdate();
             }
         }
@@ -400,26 +406,26 @@ void USART6_IRQHandler(void)
             __HAL_DMA_DISABLE(&hdma_usart6_rx);
 
             //get receive data length, length = set_data_length - remain_length
-            //»ñÈ¡½ÓÊÕÊý¾Ý³¤¶È,³¤¶È = Éè¶¨³¤¶È - Ê£Óà³¤¶È
+            //ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ = ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ - Ê£ï¿½à³¤ï¿½ï¿½
             this_time_rx_len = SBUS_RX_BUF_NUM - hdma_usart6_rx.Instance->NDTR;
 
             //reset set_data_lenght
-            //ÖØÐÂÉè¶¨Êý¾Ý³¤¶È
+            //ï¿½ï¿½ï¿½ï¿½ï¿½è¶¨ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½
             hdma_usart6_rx.Instance->NDTR = SBUS_RX_BUF_NUM;
 
             //set memory buffer 0
-            //Éè¶¨»º³åÇø0
+            //ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0
             DMA1_Stream1->CR &= ~(DMA_SxCR_CT);
             
             //enable DMA
-            //Ê¹ÄÜDMA
+            //Ê¹ï¿½ï¿½DMA
             __HAL_DMA_ENABLE(&hdma_usart6_rx);
 
             if (this_time_rx_len == RC_FRAME_LENGTH)
             {
-                //´¦ÀíÒ£¿ØÆ÷Êý¾Ý
+                //ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 ibus_to_rc(1);
-                //¼ÇÂ¼Êý¾Ý½ÓÊÕÊ±¼ä
+                //ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
                 RemoteOfflineCounterUpdate();
             }
         }
@@ -588,6 +594,7 @@ void GimbalImuSend(void)
 void CommuniteOfflineCounterUpdate(void)
 {
     OfflineCounter.PitchMotor++;
+     OfflineCounter.DaMiao_PitchMotor++;
     OfflineCounter.YawMotor++;
     OfflineCounter.RotorMotor++;
     OfflineCounter.AmmoLeftMotor++;
@@ -614,6 +621,12 @@ void CommuniteOfflineStateUpdate(void)
     }
     else{
         OfflineMonitor.PitchMotor = 0;
+    }
+    if (OfflineCounter.DaMiao_PitchMotor > MOTOR_OFFLINE_TIMEMAX){
+        OfflineMonitor.DaMiao_PitchMotor = 1;
+    }
+    else{
+        OfflineMonitor.DaMiao_PitchMotor = 0;
     }
     if (OfflineCounter.YawMotor > MOTOR_OFFLINE_TIMEMAX){
         OfflineMonitor.YawMotor = 1;
@@ -709,8 +722,8 @@ void CommuniteOfflineStateUpdate(void)
     else{
         OfflineMonitor.Remote = 0;
     }
-	//Í¼´«¿ØÖÆ
-	if(OfflineCounter.Ft_Remote>FT_REMOTE_OFFLINE_TIMEMAX){
+	//Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	if(OfflineCounter.Ft_Remote > FT_REMOTE_OFFLINE_TIMEMAX){
 		OfflineMonitor.Ft_Remote = 1;
 	}
 	else{
@@ -727,6 +740,11 @@ void DeviceOfflineMonitorUpdate(OfflineMonitor_t *Monitor)
 void PitchMotorOfflineCounterUpdate(void)
 {
     OfflineCounter.PitchMotor = 0;
+}
+
+void DaMiaoPitchMotorOfflineCounterUpdate(void)
+{
+    OfflineCounter.DaMiao_PitchMotor = 0;
 }
 
 void YawMotorOfflineCounterUpdate(void)

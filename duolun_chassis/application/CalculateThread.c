@@ -140,10 +140,10 @@ void CalculateThread(void const *pvParameters)
 						Chassis.Current[1],
 						Chassis.Current[2],
 						Chassis.Current[3],
-						Chassis.Current[4],
-						Chassis.Current[5],
-						Chassis.Current[6],
-						Chassis.Current[7]);
+						Chassis.Current[4]+1000,
+						Chassis.Current[5]+1000,
+						Chassis.Current[6]+1000,
+						Chassis.Current[7]+1000);
 	
 		osDelay(1);
 	}

@@ -10,6 +10,7 @@ typedef struct
 {
     // Motor
     uint32_t PitchMotor;
+    uint32_t DaMiao_PitchMotor;
     uint32_t YawMotor;
     uint32_t RotorMotor;
     uint32_t AmmoLeftMotor;
@@ -28,7 +29,7 @@ typedef struct
     uint32_t RefereeSelfStateNode;
     // Remote
     uint32_t Remote;
-	uint32_t Ft_Remote;//Í¼´«¿ØÖÆ
+	uint32_t Ft_Remote;//Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 } OfflineCounter_t;
 
 
@@ -36,10 +37,11 @@ typedef struct
 {
     // Motor
     uint8_t PitchMotor;//
+    uint8_t DaMiao_PitchMotor;
     uint8_t YawMotor;
-    uint8_t RotorMotor;//²¦ÅÌµç»ú
-    uint8_t AmmoLeftMotor;//×ó²¦ÅÌµç»ú
-    uint8_t AmmoRightMotor;//ÓÒ²¦ÅÌµã»÷
+    uint8_t RotorMotor;//ï¿½ï¿½ï¿½Ìµï¿½ï¿½
+    uint8_t AmmoLeftMotor;//ï¿½ï¿½ï¿½Ìµï¿½ï¿½
+    uint8_t AmmoRightMotor;//ï¿½Ò²ï¿½ï¿½Ìµï¿½ï¿½
     // CAN Bus Node
     uint8_t AimbotDataNode;
     uint8_t RefereePowerHeatNode0;
@@ -52,8 +54,8 @@ typedef struct
     uint8_t RefereeAmmoLimitNode2;
     uint8_t RefereeSelfStateNode;
     // Remote
-    uint8_t Remote;//Ò£¿ØÆ÷
-	uint8_t Ft_Remote;//Í¼´«¿ØÖÆ
+    uint8_t Remote;//Ò£ï¿½ï¿½ï¿½ï¿½
+	uint8_t Ft_Remote;//Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 } OfflineMonitor_t;
 
 

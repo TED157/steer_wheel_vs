@@ -3,7 +3,7 @@
   * @file       can_receive.c/h
   * @brief      there is CAN interrupt function  to receive motor data,
   *             and CAN send function to send motor current to control motor.
-  *             ÕâÀïÊÇCANÖĞ¶Ï½ÓÊÕº¯Êı£¬½ÓÊÕµç»úÊı¾İ,CAN·¢ËÍº¯Êı·¢ËÍµç»úµçÁ÷¿ØÖÆµç»ú.
+  *             ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½CANï¿½Ğ¶Ï½ï¿½ï¿½Õºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,CANï¿½ï¿½ï¿½Íºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½.
   * @note       
   * @history
   *  Version    Date            Author          Modification
@@ -24,6 +24,18 @@
 #include "struct_typedef.h"
 #include "main.h"
 
+//è¾¾å¦™ç”µæœºçš„æ•°æ®èŒƒå›´
+#define P_MIN -12.5f
+#define P_MAX 12.5f
+#define V_MIN -30.0f
+#define V_MAX 30.0f
+#define KP_MIN 0.0f
+#define KP_MAX 500.0f
+#define KD_MIN 0.0f
+#define KD_MAX 5.0f
+#define T_MIN -10.0f
+#define T_MAX 10.0f
+
 //rm motor data
 typedef struct{
     uint16_t    ecd;
@@ -33,10 +45,43 @@ typedef struct{
     int16_t     last_ecd;
 } motor_measure_t;
 
+// ç”µæœºå›ä¼ ä¿¡æ¯ç»“æ„ä½“
+typedef struct
+{
+	int id;
+	int state;
+	int p_int;
+	int v_int;
+	int t_int;
+	int kp_int;
+	int kd_int;
+	float pos;
+	float vel;
+	float tor;
+	float Kp;
+	float Kd;
+	float Tmos;
+	float Tcoil;
+} motor_fbpara_t;
+
+typedef struct
+{
+	int8_t id;
+	uint8_t start_flag;
+	motor_fbpara_t para;
+} DM_motor_t;
+
+typedef enum
+{
+  DaMiao_DISABLE = 0,
+  DaMiao_ENABLE,
+  DaMiao_CLear_ERROR,
+}DaMiao_CMD_e;
+
 extern void GimbalMotorControl(int16_t YawMotor, int16_t PitchMotor, int16_t RotorMotor, int16_t AmmoLeftMotor, int16_t AmmoRightMotor);
 extern void MotorProcess(uint32_t MotorID, CAN_HandleTypeDef *hcan, uint8_t* message);
 extern void GimbalMotorMeasureUpdate(GimbalMotorMeasure_t* Gimbal);
 extern void ShootMotorMeasureUpdate(ShootMotorMeasure_t* Shoot);
-
+extern void DaMiaoCanSend(float DaMiao);
 
 #endif
