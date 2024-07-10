@@ -27,7 +27,12 @@ extern ext_power_heat_data_t power_heat_data_t;
 uint32_t F_Motor[8];
 float WheelAngle[4];
 fp32 wz;
-fp32 Angle_zero_6020[4] = {97.092537, -15.6958889, -79.984741, 129.890739};
+#ifdef YELLOW_STEERWHEEL
+fp32 Angle_zero_6020[4] = {49.5983429, 124.885834, 100.053711, 123.523376};
+#endif
+#ifdef BLACK_STEERWHEEL
+fp32 Angle_zero_6020[4] = {75.8808594, -54.7405701, 100.625061, 158.815765};
+#endif
 //fp32 Angle_zero_6020[4] = {0, 0, 0, 0};
 fp32 Direction[5] = {-1.0, -1.0, 1.0, 1.0, -1.0};
 fp32 Maxspeed = 6000.0f;
@@ -38,7 +43,7 @@ fp32 Power_Max = 45.0f;
 float angle_minus;
 float run_per;
 //power control
-float last_speed[8] = {0};
+float last_speed[8] = {0},stall_kp[4]={0};
 fp32 he = 0;
 float kp = 1.30 * 1.99999999e-06;
 float lijupower = 0.0f;
@@ -67,7 +72,8 @@ pid_type_def left_front_3508_pid;
 pid_type_def right_front_3508_pid;
 pid_type_def right_back_3508_pid;
 pid_type_def left_back_3508_pid;
-pid_type_def power_control_pid;
+pid_type_def speed_adjust_pid;
+pid_type_def low_power_adjust_pid;
 first_order_filter_type_t current_6020_filter_type;
 first_order_filter_type_t current_3508_filter_type;
 first_order_filter_type_t referee_power;
@@ -76,7 +82,6 @@ first_order_filter_type_t wheel_angle_2;
 first_order_filter_type_t wheel_angle_3;
 first_order_filter_type_t wheel_angle_4;
 first_order_filter_type_t wz_filter;
-
 
 
 fp32 follow_angle;
@@ -94,7 +99,8 @@ fp32 left_front_3508_PID[3] = {speed_3508_KP, speed_3508_KI, speed_3508_KD};
 fp32 right_front_3508_PID[3] = {speed_3508_KP, speed_3508_KI, speed_3508_KD};
 fp32 right_back_3508_PID[3] = {speed_3508_KP, speed_3508_KI, speed_3508_KD};
 fp32 left_back_3508_PID[3] = {speed_3508_KP, speed_3508_KI, speed_3508_KD};
-fp32 power_control_PID[3] = {power_control_KP*1.2, power_control_KI, power_control_KD};
+fp32 speed_adjust_PID[3] = {speed_adjust_KP, speed_adjust_KI, speed_adjust_KD};
+fp32 low_power_adjust_PID[3] = {low_power_KP, low_power_KI, low_power_KD};
 
 extern motor_measure_t LEFT_FRONT_6020_Measure;
 extern motor_measure_t RIGHT_FRONT_6020_Measure;
@@ -117,8 +123,10 @@ void ChassisInfUpdate();
 void Angle_Speed_calc();
 void CMS__();
 uint8_t chassis_powerloop(Chassis_t *Chassis);
+void Chassis_motor3508_speed_adjust(Chassis_t *Chassis,fp32 *kp);
 
 float vx_last=0,vy_last=0;
+float speed_adjust_test=0;
 void CalculateThread(void const *pvParameters)
 {
 
@@ -140,10 +148,10 @@ void CalculateThread(void const *pvParameters)
 						Chassis.Current[1],
 						Chassis.Current[2],
 						Chassis.Current[3],
-						Chassis.Current[4]+1000,
-						Chassis.Current[5]+1000,
-						Chassis.Current[6]+1000,
-						Chassis.Current[7]+1000);
+						Chassis.Current[4],
+						Chassis.Current[5],
+						Chassis.Current[6]/*speed_adjust_test*/,
+						Chassis.Current[7]/*speed_adjust_test*/);
 	
 		osDelay(1);
 	}
@@ -168,7 +176,10 @@ void ChassisInit()
 	PID_init(&follow_yaw,PID_POSITION,follow_yaw_PID,1,1);
 	PID_init(&follow,PID_POSITION,follow_PID,2,1);
 	
-	//KalmanFilter_init(&Power_kf, 0.0f , 0.0001f,0.0118f ,0.0,50.0,2.0);//A,B,P,Q,R                   //¹¦ÂÊ
+	PID_init(&speed_adjust_pid,PID_POSITION,speed_adjust_PID,1.0,0);
+	
+	PID_init(&low_power_adjust_pid,PID_POSITION,low_power_adjust_PID,0.5,1);
+	//KalmanFilter_init(&Power_kf, 0.0f , 0.0001f,0.0118f ,0.0,50.0,2.0);//A,B,P,Q,R                   //ï¿½ï¿½ï¿½ï¿½
 	first_order_filter_init(&current_6020_filter_type,0.002,0.1);
 	first_order_filter_init(&current_3508_filter_type,0.002,0.1);
 	first_order_filter_init(&wheel_angle_1,0.001,0.1);
@@ -293,7 +304,7 @@ void ChassisCommandUpdate()
 		}
 		
 	}
-			/********************************	6020½Ç¶È½âËã         ***********************/ // ÎÊÌâ   i++  &&
+			/********************************	6020ï¿½Ç¶È½ï¿½ï¿½ï¿½         ***********************/ // ï¿½ï¿½ï¿½ï¿½   i++  &&
 
 		
 		if (Fabs(PTZ.FBSpeed / 32767.0) > 0.05 || Fabs(PTZ.LRSpeed / 32767.0) > 0.05 )
@@ -336,62 +347,73 @@ void ChassisCommandUpdate()
 			if(Chassis.wz == 0)
 			{
 			Chassis.WheelAngle[0] = 0 + Angle_zero_6020[0]+angle_minus;
-			Chassis.WheelAngle[1] = 0 + Angle_zero_6020[1]+angle_minus; // Ä¬ÈÏ½Ç¶È
+			Chassis.WheelAngle[1] = 0 + Angle_zero_6020[1]+angle_minus; // Ä¬ï¿½Ï½Ç¶ï¿½
 			Chassis.WheelAngle[2] = 0 + Angle_zero_6020[2]+angle_minus;
 			Chassis.WheelAngle[3] = 0 + Angle_zero_6020[3]+angle_minus;						
 			}
 			else if(Chassis.wz > 0)
 			{
 			Chassis.WheelAngle[0] = -135.0f + Angle_zero_6020[0];
-			Chassis.WheelAngle[1] = -45.0f + Angle_zero_6020[1]; // Ä¬ÈÏ½Ç¶È
+			Chassis.WheelAngle[1] = -45.0f + Angle_zero_6020[1]; // Ä¬ï¿½Ï½Ç¶ï¿½
 			Chassis.WheelAngle[2] = 45.0f + Angle_zero_6020[2];
 			Chassis.WheelAngle[3] = 135.0f + Angle_zero_6020[3];
 			}
 			else if(Chassis.wz < 0)
 			{
 			Chassis.WheelAngle[0] = 45.0f + Angle_zero_6020[0];
-			Chassis.WheelAngle[1] = 135.0f + Angle_zero_6020[1]; // Ä¬ÈÏ½Ç¶È
+			Chassis.WheelAngle[1] = 135.0f + Angle_zero_6020[1]; // Ä¬ï¿½Ï½Ç¶ï¿½
 			Chassis.WheelAngle[2] = -135.0f + Angle_zero_6020[2];
 			Chassis.WheelAngle[3] = -45.0f + Angle_zero_6020[3];							
 			}	
 		}
+		speed_up_time=0;
 		}
 		Chassis.WheelAngle[0] = loop_fp32_constrain(Chassis.WheelAngle[0], LEFT_FRONT_6020_Measure.angle - 180.0f, LEFT_FRONT_6020_Measure.angle + 180.0f);
 		Chassis.WheelAngle[1] = loop_fp32_constrain(Chassis.WheelAngle[1], RIGHT_FRONT_6020_Measure.angle - 180.0f, RIGHT_FRONT_6020_Measure.angle + 180.0f);
 		Chassis.WheelAngle[2] = loop_fp32_constrain(Chassis.WheelAngle[2], RIGHT_BACK_6020_Measure.angle - 180.0f, RIGHT_BACK_6020_Measure.angle + 180.0f);
 		Chassis.WheelAngle[3] = loop_fp32_constrain(Chassis.WheelAngle[3], LEFT_BACK_6020_Measure.angle - 180.0f, LEFT_BACK_6020_Measure.angle + 180.0f);		
-		/***********************                 3508ËÙ¶È½âËã                    ******************************/
-				//µçÈÝµÄÊ¹ÓÃ
+		/***********************                 3508ï¿½Ù¶È½ï¿½ï¿½ï¿½                    ******************************/
+				//ï¿½ï¿½ï¿½Ýµï¿½Ê¹ï¿½ï¿½
 		if(((CMS_Data.cms_status) & (uint16_t) 1) != 1 && CMS_Data.Mode == FLY)
 		{
 			speed_up_time++;
-			if(speed_up_time>200){
-				speed_up_time=200;
+			if(speed_up_time>250){
+				speed_up_time=250;
 			}
-			Chassis.vx = ((cap_gain-1) * speed_up_time *0.005 +1) * Chassis.vx ;
-			Chassis.vy = ((cap_gain-1) * speed_up_time *0.005 +1) * Chassis.vy ;
+			Chassis.vx = ((cap_gain-1) * speed_up_time *0.004 +1) * Chassis.vx ;
+			speed_adjust_test=Chassis.vx;
+			Chassis.vy = ((cap_gain-1) * speed_up_time *0.004 +1) * Chassis.vy ;
 			Chassis.wz = 1.0 * Chassis.wz ;
+			
 		}
 		else if(((CMS_Data.cms_status) & (uint16_t) 1) != 1 && CMS_Data.Mode == HIGH_SPEED &&Power_Max<=120)
 		{
 			speed_up_time=0;
-			Chassis.vx = Chassis.vx *1.2;
-			Chassis.vy = Chassis.vy *1.2;
-			Chassis.wz += 1.0 * Chassis.wz ;
+			Chassis.vx = Chassis.vx * 1.4;
+			Chassis.vy = Chassis.vy * 1.4;
+			Chassis.wz = 1.0 * Chassis.wz ;
 		}
-		else
+		else{
 			speed_up_time=0;
-
+		}
 		for (uint8_t i = 0; i < 4;)
 		{
 			speed[i] = sqrtf((Chassis.vy + Chassis.wz * gen2 * Direction[i]) * (Chassis.vy + Chassis.wz * gen2 * Direction[i]) 
 							+ (Chassis.vx + Chassis.wz * gen2 * Direction[i + 1]) * (Chassis.vx + Chassis.wz * gen2 * Direction[i + 1]));
 			i++;
 		}
-		Chassis.WheelSpeed[0] = -speed[0];
-		Chassis.WheelSpeed[1] = speed[1];
-		Chassis.WheelSpeed[2] = speed[2];
-		Chassis.WheelSpeed[3] = -speed[3];
+		if(((CMS_Data.cms_status) & (uint16_t) 1) != 1 && CMS_Data.Mode == FLY){
+			Chassis.WheelSpeed[0] = -speed[0];
+			Chassis.WheelSpeed[1] = speed[1];
+			Chassis.WheelSpeed[2] = speed[2];
+			Chassis.WheelSpeed[3] = -speed[3];
+		}
+		else{
+			Chassis.WheelSpeed[0] = -speed[0];
+			Chassis.WheelSpeed[1] = speed[1];
+			Chassis.WheelSpeed[2] = speed[2];
+			Chassis.WheelSpeed[3] = -speed[3];
+		}
 		
 //		if(Fabs(Fabs(LEFT_FRONT_6020_Measure.angle-Chassis.WheelAngle[0])>1.5
 //			||RIGHT_FRONT_6020_Measure.angle-Chassis.WheelAngle[1])>1.5 
@@ -399,7 +421,7 @@ void ChassisCommandUpdate()
 //		    ||Fabs(LEFT_BACK_6020_Measure.angle-Chassis.WheelAngle[3])>1.5)
 //			wheel_flag=1;
 
-		Angle_Speed_calc(); // ½Ç¶ÈÓÅ»¯
+		Angle_Speed_calc(); // ï¿½Ç¶ï¿½ï¿½Å»ï¿½
 
 		Chassis.speed_6020[0] = PID_calc(&left_front_6020_position_pid, LEFT_FRONT_6020_Measure.angle, Chassis.WheelAngle[0]);
 		Chassis.speed_6020[1] = PID_calc(&right_front_6020_position_pid, RIGHT_FRONT_6020_Measure.angle, Chassis.WheelAngle[1]);
@@ -469,11 +491,21 @@ void ChassisCurrentUpdate()
 	Chassis.Current[1] = PID_calc(&right_front_6020_speed_pid, RIGHT_FRONT_6020_Measure.speed_rpm, Chassis.speed_6020[1]);
 	Chassis.Current[2] = PID_calc(&right_back_6020_speed_pid, RIGHT_BACK_6020_Measure.speed_rpm, Chassis.speed_6020[2]);;
 	Chassis.Current[3] = PID_calc(&left_back_6020_speed_pid, LEFT_BACK_6020_Measure.speed_rpm, Chassis.speed_6020[3]);
-	
-	Chassis.Current[4] = PID_calc(&left_front_3508_pid, LEFT_FRONT_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[0]);;
-	Chassis.Current[5] = PID_calc(&right_front_3508_pid, RIGHT_FRONT_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[1]);
-	Chassis.Current[6] = PID_calc(&right_back_3508_pid, RIGHT_BACK_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[2]);
-	Chassis.Current[7] = PID_calc(&left_back_3508_pid, LEFT_BACK_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[3]);
+	//wz=LEFT_FRONT_3508_Measure.speed_rpm / Maxspeed;
+	Chassis_motor3508_speed_adjust(&Chassis,stall_kp);
+	if(power_heat_data_t.chassis_power<Power_Max  
+		&& (Fabs(LEFT_FRONT_3508_Measure.speed_rpm) < 100 || Fabs(RIGHT_FRONT_3508_Measure.speed_rpm) < 100 || Fabs(RIGHT_BACK_3508_Measure.speed_rpm) < 100 ||Fabs(LEFT_BACK_3508_Measure.speed_rpm) < 100 ) 
+		&& (Fabs(PTZ.FBSpeed / 32767.0) > 0.05 || Fabs(PTZ.LRSpeed / 32767.0) > 0.05) 
+		&& power_heat_data_t.buffer_energy >30){
+			Chassis.WheelSpeed[0] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
+			Chassis.WheelSpeed[1] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
+			Chassis.WheelSpeed[2] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
+			Chassis.WheelSpeed[3] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
+		}
+	Chassis.Current[4] = stall_kp[0]*PID_calc(&left_front_3508_pid, LEFT_FRONT_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[0]);;
+	Chassis.Current[5] = stall_kp[1]*PID_calc(&right_front_3508_pid, RIGHT_FRONT_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[1]);
+	Chassis.Current[6] = stall_kp[2]*PID_calc(&right_back_3508_pid, RIGHT_BACK_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[2]);
+	Chassis.Current[7] = stall_kp[3]*PID_calc(&left_back_3508_pid, LEFT_BACK_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[3]);
 	if(stop_flag==2){
 		Chassis.Current[0] *= 1.2;
 		Chassis.Current[1] *= 1.2;
@@ -488,47 +520,47 @@ void RefereeInfUpdate(ext_game_robot_status_t *referee)
 	switch(referee->chassis_power_limit)
 	{
 		case 45:
-			Power_Max = 45;v_gain=0.91;cap_gain=2.74;break;
+			Power_Max = 45;v_gain=0.91;cap_gain=2.1;break;
 		case 50:
-			Power_Max = 50;v_gain=0.95;cap_gain=2.62;break;
+			Power_Max = 50;v_gain=0.95;cap_gain=2.0;break;
 		case 55:
-			Power_Max = 55;v_gain=0.99;cap_gain=2.48;break;
+			Power_Max = 55;v_gain=0.99;cap_gain=1.92;break;
 		case 60:	
-			Power_Max = 60;v_gain=1.02;cap_gain=2.40;break;
+			Power_Max = 60;v_gain=1.02;cap_gain=1.87;break;
 		case 65:	
-			Power_Max = 65;v_gain=1.06;cap_gain=2.32;break;
+			Power_Max = 65;v_gain=1.06;cap_gain=1.80;break;
 		case 70:	
-			Power_Max = 70;v_gain=1.12;cap_gain=2.15;break;
+			Power_Max = 70;v_gain=1.12;cap_gain=1.70;break;
 		case 75:	
-			Power_Max = 75;v_gain=1.16;cap_gain=2.09;break;
+			Power_Max = 75;v_gain=1.16;cap_gain=1.64;break;
 		case 80:
-			Power_Max = 80;v_gain=1.25;cap_gain=2.04/*2.04*/;break;
+			Power_Max = 80;v_gain=1.25;cap_gain=2.0;break;//åŸºå‡†
 		case 85:	
-			Power_Max = 85;v_gain=1.27;cap_gain=2.02;break;
+			Power_Max = 85;v_gain=1.27;cap_gain=1.50;break;
 		case 90:	
-			Power_Max = 90;v_gain=1.29;cap_gain=2.00;break;
+			Power_Max = 90;v_gain=1.29;cap_gain=1.48;break;
 		case 95:	
-			Power_Max = 95;v_gain=1.33;cap_gain=1.90;break;
+			Power_Max = 95;v_gain=1.33;cap_gain=1.43;break;
 		case 100:	
-			Power_Max = 100;v_gain=1.36;cap_gain=1.84;break;
+			Power_Max = 100;v_gain=1.36;cap_gain=1.40;break;
 		case 120:
-			Power_Max = 120;v_gain=1.51;cap_gain=1.80;break;
+			Power_Max = 120;v_gain=1.51;cap_gain=1.30;break;
 		case 130:
-			Power_Max = 130;v_gain=1.58;cap_gain=1.40;break;
+			Power_Max = 130;v_gain=1.58;cap_gain=1.05;break;
 		case 140:
-			Power_Max = 140;v_gain=1.65;cap_gain=1.30;break;
+			Power_Max = 140;v_gain=1.65;cap_gain=1.05;break;
 		case 150:
-			Power_Max = 150;v_gain=1.73;cap_gain=1.30;break;
+			Power_Max = 150;v_gain=1.73;cap_gain=1.05;break;
 		case 160:
-			Power_Max = 160;v_gain=1.80;cap_gain=1.20;break;
+			Power_Max = 160;v_gain=1.80;cap_gain=1.05;break;
 		case 170:
-			Power_Max = 170;v_gain=1.87;cap_gain=1.20;break;
+			Power_Max = 170;v_gain=1.87;cap_gain=1.05;break;
 		case 180:
-			Power_Max = 180;v_gain=1.93;cap_gain=1.10;break;
+			Power_Max = 180;v_gain=1.93;cap_gain=1.05;break;
 		case 190:
-			Power_Max = 190;v_gain=2.00;cap_gain=1.10;break;
+			Power_Max = 190;v_gain=2.00;cap_gain=1.05;break;
 		case 200:
-			Power_Max = 200;v_gain=2.100;cap_gain=1.10;break;
+			Power_Max = 200;v_gain=2.100;cap_gain=1.05;break;
 		default:
 			Power_Max = 45;v_gain=0.85;cap_gain=1.0;break;
 		
@@ -561,7 +593,7 @@ void CMS__()
 	else{
 		CMS_Data.Mode = NORMAL;
 	}
-	if(power_heat_data_t.buffer_energy < 20 || cms_offline_counter > 200) //cmsÓÃ²»ÁË
+	if(power_heat_data_t.buffer_energy < 20 || cms_offline_counter > 200) //cmsï¿½Ã²ï¿½ï¿½ï¿½
 	{
 		CMS_Data.Mode = NORMAL;	
 	}
@@ -588,10 +620,10 @@ float Plimit = 0;
 uint8_t chassis_powerloop(Chassis_t *Chassis)
 {
 
-	// µç³Ø¹©µç
-	// ¼ÆËãCMS³äµç¹¦ÂÊ
+	// ï¿½ï¿½Ø¹ï¿½ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½CMSï¿½ï¿½ç¹¦ï¿½ï¿½
 
-	// ÊýÑ§Ä£ÐÍÔ¤²â¹¦ÂÊ£¨²»Ê¹ÓÃCMS¹¦ÂÊ¼ÆµÄ¹¦ÂÊ¼ÆËã£©
+	// ï¿½ï¿½Ñ§Ä£ï¿½ï¿½Ô¤ï¿½â¹¦ï¿½Ê£ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½CMSï¿½ï¿½ï¿½Ê¼ÆµÄ¹ï¿½ï¿½Ê¼ï¿½ï¿½ã£©
 //	he = fabs(2 * Chassis->Motor3508[0].speed_rpm - last_speed[0]) * fabs((float)Chassis->Current[4]) * kp +
 //		 fabs(2 * Chassis->Motor3508[1].speed_rpm - last_speed[1]) * fabs((float)Chassis->Current[5]) * kp +
 //		 fabs(2 * Chassis->Motor3508[2].speed_rpm - last_speed[2]) * fabs((float)Chassis->Current[6]) * kp +
@@ -684,7 +716,21 @@ uint8_t chassis_powerloop(Chassis_t *Chassis)
 		Chassis->Current[7] *= (power_scale) * (Plimit);
 
 	}
-
+	if(power_heat_data_t.chassis_power<Power_Max  
+		&& (Fabs(LEFT_FRONT_3508_Measure.speed_rpm) < 100 || Fabs(RIGHT_FRONT_3508_Measure.speed_rpm) < 100 || Fabs(RIGHT_BACK_3508_Measure.speed_rpm) < 100 ||Fabs(LEFT_BACK_3508_Measure.speed_rpm) < 100 ) 
+		&& (Fabs(PTZ.FBSpeed / 32767.0) > 0.05 || Fabs(PTZ.LRSpeed / 32767.0) > 0.05) 
+		&& power_heat_data_t.buffer_energy >30){
+			Chassis->Current[4] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
+			Chassis->Current[5] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
+			Chassis->Current[6] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
+			Chassis->Current[7] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
+			for(uint8_t i=0;i<4;i++){
+				if(Chassis->Current[i+4]>8000)
+					Chassis->Current[i+4]=8000;
+				if(Chassis->Current[i+4]<-8000)
+					Chassis->Current[i+4]=-8000;
+			}
+		}
 	//			if(CMS_charge_power < 0.0f)
 	//			{
 	//			CMS_charge_power = 0.0f;
@@ -715,7 +761,7 @@ uint8_t chassis_powerloop(Chassis_t *Chassis)
 	//			}
 	//	}
 	//
-	////µçÈÝ¹©µç
+	////ï¿½ï¿½ï¿½Ý¹ï¿½ï¿½ï¿½
 	//	if(Chassis->power_mode == CAPACITY)
 	//	{
 	//		CMS_charge_power = powermax;
@@ -728,3 +774,30 @@ uint8_t chassis_powerloop(Chassis_t *Chassis)
 	return 0;
 }
 
+/*@briefï¼šè½®é€Ÿè°ƒæ•´*/
+fp32 k_wheel_speed[4]={1,1,1,1};
+//fp32 wheel_speed_last[4]={0,0,0,0};
+//uint8_t speed_adiust_flag[4]={1,1,1,1};//è½®é€Ÿè°ƒæ•´ä¸­
+void Chassis_motor3508_speed_adjust(Chassis_t *Chassis,fp32 *kp)
+{
+	fp32 ave=0;
+	for(uint8_t i=0;i<4;i++){
+		if( Fabs(Chassis->WheelSpeed[i])>0)
+			k_wheel_speed[i]=Fabs(Chassis->Motor3508[i].speed_rpm / Chassis->WheelSpeed[i] / Maxspeed);
+		else k_wheel_speed[i]=1;
+	}
+	 
+	ave=(k_wheel_speed[0]+k_wheel_speed[1]+k_wheel_speed[2]+k_wheel_speed[3])/4;
+	for(uint8_t i=0;i<4;i++){
+		kp[i]=1.0+PID_calc(&speed_adjust_pid,k_wheel_speed[i]/ave,1);
+//		if(k_wheel_speed[i] > ave*1.1){
+//			kp[i]=0.5; 
+//		}
+//		else if(k_wheel_speed[i] < ave*0.9){
+//			kp[i]=2;
+//		}
+//		else{
+//			kp[i]=1;
+//		}
+	}
+}
