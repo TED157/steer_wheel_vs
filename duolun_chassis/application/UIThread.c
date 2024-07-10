@@ -11,8 +11,8 @@
 #include "CalculateThread.h"
 #include "UIThread.h"
 #include "InterruptService.h"
-//ÐèÒªÌí¼ÓUIÂýËÙ
-//ÐèÒªÌí¼Óµ×ÅÌÍ£Ö¹µÄUI 
+//ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½UIï¿½ï¿½ï¿½ï¿½
+//ï¿½ï¿½Òªï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½Í£Ö¹ï¿½ï¿½UI 
 //Graph_Data deng1,kuang,deng2,deng3,deng4,fu,imagex,imagex1,imagex2,imagex3,imagey,imagey1,imagey2,imagey3,imagey4;
 //String_Data bullet,bullet3,DAFU,Abuff,Pbuff,Cbuff,state,ZIMIAO,dafustate,zimiaostate,dafustate1,zimiaostate1,state4;
 //Float_Data capacityD,Min,Sec;
@@ -20,15 +20,15 @@
 //int BTime=0,BM=10,BS=0;
 //Float_Data BMin,BSec;
 
-//Graph_Data Frame;//×ÔÃé¿ò
-////×¼ÐÇºáÏß
+//Graph_Data Frame;//ï¿½ï¿½ï¿½ï¿½ï¿½
+////×¼ï¿½Çºï¿½ï¿½ï¿½
 //Graph_Data Collimation_1;
 //Graph_Data Collimation_2;
 //Graph_Data Collimation_3;
 //Graph_Data Collimation_4;
-////×¼ÐÇÊýÏß
+////×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //Graph_Data Collimation_5;
-////×¼ÐÄ¾àÀëÏß
+////×¼ï¿½Ä¾ï¿½ï¿½ï¿½ï¿½ï¿½
 //Graph_Data Collimation_6;
 //Graph_Data Collimation_7;
 //Graph_Data Collimation_8;
@@ -73,7 +73,7 @@ extern float angle_minus;
 ChassisMode_e mode=NOFORCE;
 uint8_t fire_mode,shoot_mode,aim_mode,match_mode;
 uint8_t coords_flag=0;
-uint8_t mode_change_flag;//bit 0-7 µ×ÅÌÄ£Ê½,×Ô¶¯¿ª»ð£¬µ¥Ë«·¢£¬µ¯²Õ¸Ç¿ªºÏ£¬´ò»÷¶ÔÏó
+uint8_t mode_change_flag;//bit 0-7 ï¿½ï¿½ï¿½ï¿½Ä£Ê½,ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ð£¬µï¿½Ë«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¸Ç¿ï¿½ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void UISendTask(void const * argument)
 {
 	osDelay(1000);
@@ -105,14 +105,14 @@ void UI(void const * argument)
 	shoot_mode=0x00;
 	match_mode=0x00;
 	aim_mode=(PTZ.AimTargetRequest&0x31);
-	//¹Ì¶¨UIÍ¼²ã
-	//Ä£Ê½ÇÐ»»
+	//ï¿½Ì¶ï¿½UIÍ¼ï¿½ï¿½
+	//Ä£Ê½ï¿½Ð»ï¿½
 	Char_Draw(&Mode,"mod",UI_Graph_ADD,0,UI_Color_Green,18,21,2,78,782,"MODE\nFIRE\nSINGLE\nAMMO");
 	Char_ReFresh(Mode);	
 	usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
 	num--;top=head[num];
 	osDelay(100);
-	//²Î¿¼Ïß
+	//ï¿½Î¿ï¿½ï¿½ï¿½
 	Line_Draw(&imagex,"xck",UI_Graph_ADD,0,UI_Color_Green,2,6900,540,7310,540);
 	Line_Draw(&imagey,"yck",UI_Graph_ADD,0,UI_Color_Green,1,7105,900,7105,100);
 	Line_Draw(&x1,"x01",UI_Graph_ADD,0,UI_Color_Cyan,1,7050,520,7160,520);
@@ -128,7 +128,7 @@ void UI(void const * argument)
 	usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
 	num--;top=head[num];
 	osDelay(100);
-	//Ä¬ÈÏÄ£Ê½	
+	//Ä¬ï¿½ï¿½Ä£Ê½	
 	Char_Draw(&noforce,"nof",UI_Graph_ADD,1,UI_Color_White,16,7,2,225,786,"noforce");
 	Char_ReFresh(noforce);
 	usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
@@ -152,7 +152,7 @@ void UI(void const * argument)
 	while(1)
     {
 		if(Chassis.Mode==FALLOW&&mode==NOFORCE){
-			//Ä£Ê½ÇÐ»»
+			//Ä£Ê½ï¿½Ð»ï¿½
 			Char_Draw(&Mode,"mod",UI_Graph_ADD,0,UI_Color_Green,18,21,2,78,782,"MODE\nFIRE\nSINGLE\nAMMO");
 			Char_ReFresh(Mode);	
 			usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
@@ -163,7 +163,7 @@ void UI(void const * argument)
 			usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
 			num--;top=head[num];	
 			osDelay(100);
-			//²Î¿¼Ïß
+			//ï¿½Î¿ï¿½ï¿½ï¿½
 			Line_Draw(&imagex,"xck",UI_Graph_ADD,0,UI_Color_Green,2,6900,540,7310,540);
 			Line_Draw(&imagey,"yck",UI_Graph_ADD,0,UI_Color_Green,1,7105,900,7105,100);
 			Line_Draw(&x1,"x01",UI_Graph_ADD,0,UI_Color_Cyan,1,7050,520,7160,520);
@@ -188,7 +188,7 @@ void UI(void const * argument)
 			usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
 			num--;top=head[num];
 			osDelay(100);
-			//Ä¬ÈÏÄ£Ê½		
+			//Ä¬ï¿½ï¿½Ä£Ê½		
 			if(  (PTZ.PTZStatusInformation     &  64) == 64)
 			{
 				Char_Draw(&open2,"opp",UI_Graph_ADD,1,UI_Color_Purplish_red,16,4,2,225,760,"auto");
@@ -255,18 +255,18 @@ void UI(void const * argument)
 				coords_flag=2;
 			}
 		}
-		/*µçÈÝµçÑ¹*/
+		/*ï¿½ï¿½ï¿½Ýµï¿½Ñ¹*/
 		if(CMS_Data.Mode==NORMAL)
 			Float_Draw(&CapData,"cpd",UI_Graph_Change,0,UI_Color_White,30,5,2,920,158,CMS_Data.cms_cap_v*1000);
 		else if(CMS_Data.Mode==FLY)
 			Float_Draw(&CapData,"cpd",UI_Graph_Change,0,UI_Color_Yellow,40,5,2,920,158,CMS_Data.cms_cap_v*1000);
 		else if(CMS_Data.Mode==HIGH_SPEED)
 			Float_Draw(&CapData,"cpd",UI_Graph_Change,0,UI_Color_Purplish_red,40,5,2,920,158,CMS_Data.cms_cap_v*1000);
-		/*µç³ØµçÑ¹*/
+		/*ï¿½ï¿½Øµï¿½Ñ¹*/
 		Float_Draw(&battery_voltage,"btv",UI_Graph_Change,0,UI_Color_Purplish_red,30,5,2,920,208,power_heat_data_t.chassis_voltage);
-		/*µç»úÀëÏß*/
-		if(Chassis.Mode==FALLOW){
-			/*µç»úÀëÏß*/
+		/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
+		if(Chassis.Mode==FALLOW || Chassis.Mode==ROTING){
+			/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 			if(Offline.Motor[4] || Offline.Motor[5] || Offline.Motor[6] || Offline.Motor[7])
 			{
 				Circle_Draw(&Motor_offline,"mto",UI_Graph_Change,0,UI_Color_Main,10,(uint32_t)(961-50*sin(angle_minus*0.0175)),(uint32_t)(258+50*cos(angle_minus*0.0175)),5);
@@ -274,11 +274,11 @@ void UI(void const * argument)
 			else{
 				Circle_Draw(&Motor_offline,"mto",UI_Graph_Change,0,UI_Color_Green,10,(uint32_t)(961-50*sin(angle_minus*0.0175)),(uint32_t)(258+50*cos(angle_minus*0.0175)),5);
 			}
-			/*×ËÌ¬*/
+			/*ï¿½ï¿½Ì¬*/
 			Line_Draw(&Posture_line,"pol",UI_Graph_Change,0,UI_Color_Yellow,25,(uint32_t)(961+30*sin(angle_minus*0.0175)),(uint32_t)(258-30*cos(angle_minus*0.0175)),(uint32_t)(961-30*sin(angle_minus*0.0175)),(uint32_t)(258+30*cos(angle_minus*0.0175)));
 		}
 		else{
-			/*µç»úÀëÏß*/
+			/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 			if(Offline.Motor[4] || Offline.Motor[5] || Offline.Motor[6] || Offline.Motor[7])
 			{
 				Circle_Draw(&Motor_offline,"mto",UI_Graph_Change,0,UI_Color_Main,10,(uint32_t)(961),(uint32_t)(308),5);
@@ -300,24 +300,24 @@ void UI(void const * argument)
 			}
 		}
 		mode_change_flag=0x00;
-		//Ä£Ê½ÇÐ»»¼ì²â
-		//µ×ÅÌÄ£Ê½ÇÐ»»
+		//Ä£Ê½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½
+		//ï¿½ï¿½ï¿½ï¿½Ä£Ê½ï¿½Ð»ï¿½
 		if(Chassis.Mode != mode){
 			mode_change_flag |= (uint8_t) (1 << 0);
 		}
-		//¿ª»ðÄ£Ê½×ª»»
+		//ï¿½ï¿½ï¿½ï¿½Ä£Ê½×ªï¿½ï¿½
 		if(fire_mode!=(PTZ.PTZStatusInformation&64)){
 			mode_change_flag |= (uint8_t) (1<<1);
 		}
-		//µ¥Ë«·¢Ä£Ê½ÇÐ»»
+		//ï¿½ï¿½Ë«ï¿½ï¿½Ä£Ê½ï¿½Ð»ï¿½
 		if(shoot_mode!=(PTZ.AimTargetRequest&0x02)){
 			mode_change_flag |= (uint8_t) (1<<2);
 		}
-		//´ò»÷¶ÔÏóÇÐ»»
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½
 		if(aim_mode!=(PTZ.AimTargetRequest&0x31)){
 			mode_change_flag |= (uint8_t) (1<<4);
 		}
-		//±ÈÈüÄ£Ê½ÇÐ»»
+		//ï¿½ï¿½ï¿½ï¿½Ä£Ê½ï¿½Ð»ï¿½
 		if(match_mode!=(PTZ.PTZStatusInformation&0x40))
 		{
 			mode_change_flag |= (uint8_t) (1<<5);
@@ -326,7 +326,7 @@ void UI(void const * argument)
 		fire_mode=(PTZ.PTZStatusInformation&64);
 		shoot_mode=(PTZ.AimTargetRequest&0x02);
 		aim_mode=(PTZ.AimTargetRequest&0x31);																																																					
-		//************************************µ×ÅÌÄ£Ê½**********************************
+		//************************************ï¿½ï¿½ï¿½ï¿½Ä£Ê½**********************************
 		if(mode_change_flag&0x01){
 			if(Chassis.Mode == NOFORCE)
 			{
@@ -340,7 +340,7 @@ void UI(void const * argument)
 			}
 			else if(Chassis.Mode == FALLOW)
 			{ 
-				Char_Draw(&noforce,"nof",UI_Graph_Change,1,UI_Color_Orange,16,7,2,225,786,"fallow ");
+				Char_Draw(&noforce,"nof",UI_Graph_Change,1,UI_Color_Orange,16,7,2,225,786,"follow ");
 				Char_ReFresh(noforce);
 			}
 			else if(Chassis.Mode == STOP)
@@ -349,7 +349,7 @@ void UI(void const * argument)
 				Char_ReFresh(noforce);
 			}
 		}
-		//************************************×Ô¶¯¿ª»ð********************************
+		//************************************ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½********************************
 		if(mode_change_flag&0x02){
 			if(  (PTZ.PTZStatusInformation     &  64) == 64)
 			{
@@ -362,7 +362,7 @@ void UI(void const * argument)
 				Char_ReFresh(open2);	
 			}	
 		}
-		//*********************************µ¥·¢*********************************
+		//*********************************ï¿½ï¿½ï¿½ï¿½*********************************
 		if(mode_change_flag&0x04){
 			if(   (PTZ.AimTargetRequest & 0x02) == 0x02){
 				Char_Draw(&open3,"oop",UI_Graph_Change,1,UI_Color_Purplish_red,16,7,2,225,731,"open  ");
