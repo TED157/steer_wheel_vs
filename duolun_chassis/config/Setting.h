@@ -3,6 +3,10 @@
 
 #include "struct_typedef.h"
 
+//ç”¨äºŽåŒºåˆ†ä¸¤è¾†èˆµè½®
+
+#define YELLOW_STEERWHEEL 
+//#define BLACK_STEERWHEEL
 
 #define LENGTH 1000
 #define gen2 1.414213562373/2.0
@@ -16,11 +20,11 @@
 
 #define PARAMETER_FILE "Setting.h"
 
-// imu°²×°·½Ïò
+// imuï¿½ï¿½×°ï¿½ï¿½ï¿½ï¿½
 #define IMU_DIRECTION_rzrxy_XYZ
-// imu yawÖáÁãÆ®Æ«ÖÃ
+// imu yawï¿½ï¿½ï¿½ï¿½Æ®Æ«ï¿½ï¿½
 #define IMU_GYRO_YAW_BIAS    							-0.003f
-// µç»úID·ÖÅä
+// ï¿½ï¿½ï¿½IDï¿½ï¿½ï¿½ï¿½
 #define LEFT_FRONT_6020         			    0x205
 #define RIGHT_FRONT_6020         			    0x206
 #define RIGHT_BACK_6020                         0x207
@@ -33,9 +37,12 @@
 
 #define YawMotorId                                     	0x205
 
-#define FollowAngle              						22.7005157f//26.134f
-
-
+#ifdef BLACK_STEERWHEEL
+#define FollowAngle              						-76.3203506f//26.134f
+#endif
+#ifdef YELLOW_STEERWHEEL
+#define FollowAngle              						-49.9499359f//26.134f
+#endif 
 
 #define FOLLOW_KP						0.033f
 #define FOLLOW_KI						0.00000f
@@ -63,11 +70,14 @@
 #define speed_3508_KI_L							0.0f
 #define speed_3508_KD_L							0.0f
 
-#define power_control_KP                        0.5f
-#define power_control_KI                        0.01000000016f 
-#define power_control_KD                        0.0f
+#define speed_adjust_KP                         1.2f
+#define speed_adjust_KI                         0.0f 
+#define speed_adjust_KD                         0.0f
 
-// Í¨ÐÅcan×ÜÏßÎ»ÖÃ
+#define low_power_KP                            0.5f
+#define low_power_KI                            0.0f
+#define low_power_KD                            0.0f
+// Í¨ï¿½ï¿½canï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
 #define COMMUNICATE_CANPORT         hcan1
 #define CONTROL_CANPORT             hcan2
 
