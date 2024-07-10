@@ -168,7 +168,7 @@ void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, 
 
     // 如果角速度小于阈值且加速度处于设定范围内,认为运动稳定,加速度可以用于修正角速度
     // 稍后在最后的姿态更新部分会利用StableFlag来确定
-    if (QEKF_INS.gyro_norm < 0.3f && QEKF_INS.accl_norm > 9.8f - 0.5f && QEKF_INS.accl_norm < 9.8f + 0.5f)
+    if (/*QEKF_INS.gyro_norm < 0.3f && */QEKF_INS.accl_norm > 9.8f - 0.5f && QEKF_INS.accl_norm < 9.8f + 0.5f)
     {
         QEKF_INS.StableFlag = 1;
     }
