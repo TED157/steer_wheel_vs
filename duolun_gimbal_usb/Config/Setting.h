@@ -17,6 +17,12 @@
 //#define INFANTRY5
 //#define SENTRY7
 
+//用于区分两辆舵轮
+#define YELLOW_STEERWHEEL 
+//#define BLACK_STEERWHEEL
+
+
+
 #ifdef INFANTRY4
 
 // ���������ļ�
@@ -74,8 +80,8 @@
 // ���ID����
 #define YAW_MOTOR_ID                0x205
 #define PITCH_MOTOR_ID              0x206
-#define DAMIAO_PITCH_MOTOR_SLAVE_ID 0x07
-#define DAMIAO_PITCH_MOTOR_MASTER_ID 0x01
+#define DAMIAO_PITCH_MOTOR_SLAVE_ID 0x08
+#define DAMIAO_PITCH_MOTOR_MASTER_ID 0x09
 #define ROTOR_MOTOR_ID              0x203
 #define AMMO_LEFT_MOTOR_ID          0x201
 #define AMMO_RIGHT_MOTOR_ID         0x202
@@ -83,14 +89,15 @@
 // ��̨��������˶��������̨��̬�����ƣ�����ϵͬ��Ϊ1������Ϊ-1
 // ���̵�������˶�����͵������ǹ�ܷ���ͬ��Ϊ1������Ϊ-1
 // Ħ���ֵ�������˶�����͵���ͬ��Ϊ1������Ϊ-1
-#define YAW_MOTOR_DIRECTION         1
-#define PITCH_MOTOR_DIRECTION       -1
-#define ROTOR_MOTOR_DIRECTION       1
-#define AMMO_LEFT_MOTOR_DIRECTION   -1
-#define AMMO_RIGHT_MOTOR_DIRECTION  1
+#define YAW_MOTOR_DIRECTION                 1
+#define PITCH_MOTOR_DIRECTION              -1
+#define DAMIAO_PITCH_MOTOR_DIRECTION       1
+#define ROTOR_MOTOR_DIRECTION               1
+#define AMMO_LEFT_MOTOR_DIRECTION          -1
+#define AMMO_RIGHT_MOTOR_DIRECTION          1
 // ��̨YAW�����͸����޷�
 #define YAW_ZERO_ECDANGLE           -2.5//180.0f-142.5f//21.4f
-#define PITCH_MIN_ANGLE             -20.0f//-27.0f//-24.0f//-26.0f
+#define PITCH_MIN_ANGLE             -19.5f//-27.0f//-24.0f//-26.0f
 #define PITCH_MAX_ANGLE             17.0f//15.0f
 // Ĭ��Ħ�����ٶ�
 #define DEFAULT_AMMOL_PID           AMMO_LEFT_SPEED_30MS

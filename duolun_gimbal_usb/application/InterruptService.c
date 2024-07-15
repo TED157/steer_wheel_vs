@@ -84,6 +84,7 @@ void RefereeAmmoLimitNode1OfflineCounterUpdate(void);
 void RefereeAmmoLimitNode2OfflineCounterUpdate(void);
 void RefereeSelfStateNodeOfflineCounterUpdate(void);
 void RemoteOfflineCounterUpdate(void);
+void DaMiaoPitchMotorOfflineCounterUpdate(void);
 void GimbalImuSend(void);
 void RefereeUsbSend(void);
 void Ft_RemoteoOfflineStateNodeOffline(void);
@@ -218,7 +219,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         }
         case DAMIAO_PITCH_MOTOR_MASTER_ID:
         {
-            AmmoRightMotorMotorOfflineCounterUpdate();
+            DaMiaoPitchMotorOfflineCounterUpdate();
             MotorProcess(rx_header.StdId, hcan, rx_data);
             break;
         }
@@ -443,7 +444,7 @@ uint32_t GetSystemTimer(void)
 }
 
 
-void GimbalMotorCommandSend(void);
+//void GimbalMotorCommandSend(void);
 
 void GimbalImuPacketSend(void);
 
@@ -561,17 +562,17 @@ void TIM6_DAC_IRQHandler(void)
 
 
 
-GimbalOutput_t GimbalMotorOutput;
-void GimbalMotorCommandSend(void)
-{
-    GetGimbalMotorOutput(&GimbalMotorOutput);
-    GimbalMotorControl( GimbalMotorOutput.Yaw * YAW_MOTOR_DIRECTION,
-                        GimbalMotorOutput.Pitch * PITCH_MOTOR_DIRECTION, 
-                        GimbalMotorOutput.Rotor, 
-                        GimbalMotorOutput.AmmoLeft, 
-                        GimbalMotorOutput.AmmoRight
-                        );
-}
+//GimbalOutput_t GimbalMotorOutput;
+//void GimbalMotorCommandSend(void)
+//{
+//    GetGimbalMotorOutput(&GimbalMotorOutput);
+//    GimbalMotorControl( GimbalMotorOutput.Yaw * YAW_MOTOR_DIRECTION,
+//                        GimbalMotorOutput.Pitch * PITCH_MOTOR_DIRECTION, 
+//                        GimbalMotorOutput.Rotor, 
+//                        GimbalMotorOutput.AmmoLeft, 
+//                        GimbalMotorOutput.AmmoRight
+//                        );
+//}
 
 ImuPacketNormal_t ImuPacket;
 void GimbalImuSend(void)

@@ -69,6 +69,8 @@ typedef struct
 	int8_t id;
 	uint8_t start_flag;
 	motor_fbpara_t para;
+	uint8_t error_clear_flag;
+	uint32_t error_clear_time;
 } DM_motor_t;
 
 typedef enum

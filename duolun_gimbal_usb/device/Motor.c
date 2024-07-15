@@ -23,20 +23,33 @@
 
 #include "Setting.h"
 #include "InterruptService.h"
+#include "pid.h"
+#include "CalculateThread.h"
 #define DaMiao_Motor_Enable_Message(message)           for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfc;     
 #define DaMiao_Motor_Disable_Message(message)             for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfd;
 #define DaMiao_Motor_Error_Clear_Message(message)      for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfb;
 
+#ifdef BLACK_STEERWHEEL
+#define DAMIAO_MAX_ANGLE -3.2
+#define DAMIAO_MIN_ANGLE -3.9
+#endif
+#ifdef YELLOW_STEERWHEEL
+#define DAMIAO_MAX_ANGLE 2.1
+#define DAMIAO_MIN_ANGLE 1.34
+#endif
 
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
 extern OfflineMonitor_t OfflineMonitor;
+extern Gimbal_t                Gimbal;
 static uint32_t             send_mail_box;
 static CAN_TxHeaderTypeDef  can_tx_message;
 static uint8_t              MotorSendBuffer[16];
-static uint8_t              damiao_data[8] = {0};
+uint8_t              damiao_data[8] = {0};
 static uint8_t              MotorBusPosition[8] = {0};
+uint8_t                     DaMiao_message[8];
 
+DM_motor_t DamiaoPitchMotorMeasure;
 
 void GimbalMotorControl(int16_t YawMotor, int16_t PitchMotor, int16_t RotorMotor, int16_t AmmoLeftMotor, int16_t AmmoRightMotor);
 void MotorProcess(uint32_t MotorID, CAN_HandleTypeDef *hcan, uint8_t* message);
@@ -97,13 +110,24 @@ void DaMiaoCanSend(float DaMiao)
     can_tx_message.DLC = 0x08;
     // 达妙电机控制指令发送（扭矩）
     can_tx_message.StdId = DAMIAO_PITCH_MOTOR_SLAVE_ID;
-    uint8_t message[8];
     if(OfflineMonitor.DaMiao_PitchMotor){
-        DaMiao_ctrl_Command(message,DaMiao_ENABLE);
-        HAL_CAN_AddTxMessage(&hcan1, &can_tx_message, message, &send_mail_box);
+        DaMiao_ctrl_Command(DaMiao_message,DaMiao_ENABLE);
+        HAL_CAN_AddTxMessage(&hcan2, &can_tx_message, DaMiao_message, &send_mail_box);
     }
+	if(DamiaoPitchMotorMeasure.para.state>7 && !DamiaoPitchMotorMeasure.error_clear_flag){
+		DaMiao_ctrl_Command(DaMiao_message,DaMiao_CLear_ERROR);
+		HAL_CAN_AddTxMessage(&hcan2, &can_tx_message, DaMiao_message, &send_mail_box);
+		DamiaoPitchMotorMeasure.error_clear_flag = 1;
+		DamiaoPitchMotorMeasure.error_clear_time = GetSystemTimer();
+	}
+	if(GetSystemTimer() - DamiaoPitchMotorMeasure.error_clear_time > 5000 && !OfflineMonitor.DaMiao_PitchMotor && DamiaoPitchMotorMeasure.error_clear_flag)
+		DamiaoPitchMotorMeasure.error_clear_flag = 0;
+	if(DamiaoPitchMotorMeasure.para.pos >= DAMIAO_MAX_ANGLE && DaMiao > 0)
+		DaMiao = 0;
+	else if(DamiaoPitchMotorMeasure.para.pos <= DAMIAO_MIN_ANGLE && DaMiao < 0)
+		DaMiao = -0.5;
     DaMiao_mit_ctrl(damiao_data,DaMiao);
-    HAL_CAN_AddTxMessage(&hcan1, &can_tx_message, damiao_data, &send_mail_box);
+    HAL_CAN_AddTxMessage(&hcan2, &can_tx_message, damiao_data, &send_mail_box);
 }
 
 
@@ -112,7 +136,7 @@ motor_measure_t PitchMotorMeasure;
 motor_measure_t RotorMotorMeasure;
 static motor_measure_t AmmoLeftMotorMeasure;
 static motor_measure_t AmmoRightMotorMeasure;
-DM_motor_t DamiaoPitchMotorMeasure;
+
 
 //motor data read
 #define get_motor_measure(ptr, data)                                    \

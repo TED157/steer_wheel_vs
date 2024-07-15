@@ -25,8 +25,12 @@
 
 #include "QuaternionEKF.h"
 #define IMU_temp_PWM(pwm)  imu_pwm_set(pwm)                    //pwm¸ø¶¨
-float bias=-0.000452703995f;//0.04375f;
-
+#ifdef YELLOW_STEERWHEEL
+float bias=-0.00079999998f;//0.04375f;
+#endif
+#ifdef BLACK_STEERWHEEL
+float bias=0.002156f;//0.04375f;
+#endif
 /**
   * @brief          control the temperature of bmi088
   * @param[in]      temp: the temperature of bmi088
@@ -138,7 +142,7 @@ void AttitudeThread(void const *pvParameters)
     while (1)
     {
         AHRS_update(INS_quat, 0.001f, bmi088_real_data.gyro, bmi088_real_data.accel);
-        get_angle(QEKF_INS.q/*INS_quat*/, INS_angle + INS_YAW_ADDRESS_OFFSET, INS_angle + INS_PITCH_ADDRESS_OFFSET, INS_angle + INS_ROLL_ADDRESS_OFFSET);
+        get_angle(/*QEKF_INS.q*/INS_quat, INS_angle + INS_YAW_ADDRESS_OFFSET, INS_angle + INS_PITCH_ADDRESS_OFFSET, INS_angle + INS_ROLL_ADDRESS_OFFSET);
 		//memcpy(INS_quat,QEKF_INS.q,sizeof(QEKF_INS.q));
 		//        IMU_Timer = GetSystemTimer();
 //        CanSendMessage(&COMMUNICATE_CANPORT, IMU_PACKET_TIME_ID, 4, (uint8_t *)&IMU_Timer);
@@ -173,7 +177,7 @@ const fp32 *get_INS_angle_point(void)
 }
 void GetCurrentQuaternion(fp32 q[4])
 {
-    memcpy(q, QEKF_INS.q, sizeof(QEKF_INS.q));
+    memcpy(q, INS_quat, sizeof(INS_quat));
 }
 
 
@@ -271,8 +275,8 @@ void GimbalEulerSystemMeasureUpdate(EulerSystemMeasure_t *IMU)
 #ifdef IMU_DIRECTION_rzyx_XYZ
 void AHRS_update(fp32 quat[4], fp32 time, fp32 gyro[3], fp32 accel[3])
 {
-    MahonyAHRSupdate(quat, -gyro[2], gyro[1], gyro[0], -accel[2], accel[1], accel[0], 0, 0, 0);
-	IMU_QuaternionEKF_Update(-gyro[2], gyro[1], gyro[0]+bias, -accel[2], accel[1], accel[0],0.001f);
+    MahonyAHRSupdate(quat, -gyro[2], gyro[1], gyro[0]+bias, -accel[2], accel[1], accel[0], 0, 0, 0);
+	//IMU_QuaternionEKF_Update(-gyro[2], gyro[1], gyro[0]+bias, -accel[2], accel[1], accel[0],0.001f);
 }
 void GimbalEulerSystemMeasureUpdate(EulerSystemMeasure_t *IMU)
 {

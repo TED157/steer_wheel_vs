@@ -17,6 +17,7 @@ typedef struct{
 typedef struct{
     int16_t    Yaw;
     int16_t    Pitch;
+	fp32       DaMiao_Pitch;
     int16_t    Rotor;
     int16_t    AmmoLeft;
     int16_t    AmmoRight;
