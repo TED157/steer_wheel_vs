@@ -27,10 +27,10 @@ extern ext_power_heat_data_t power_heat_data_t;
 uint32_t F_Motor[8];
 float WheelAngle[4];
 fp32 wz;
-#ifdef YELLOW_STEERWHEEL
+#ifdef BLACK_STEERWHEEL
 fp32 Angle_zero_6020[4] = {49.5983429, 124.885834, 100.053711, 123.523376};
 #endif
-#ifdef BLACK_STEERWHEEL
+#ifdef YELLOW_STEERWHEEL
 fp32 Angle_zero_6020[4] = {75.8808594, -54.7405701, 100.625061, 158.815765};
 #endif
 //fp32 Angle_zero_6020[4] = {0, 0, 0, 0};
@@ -73,7 +73,7 @@ pid_type_def right_front_3508_pid;
 pid_type_def right_back_3508_pid;
 pid_type_def left_back_3508_pid;
 pid_type_def speed_adjust_pid;
-pid_type_def low_power_adjust_pid;
+//pid_type_def low_power_adjust_pid;
 first_order_filter_type_t current_6020_filter_type;
 first_order_filter_type_t current_3508_filter_type;
 first_order_filter_type_t referee_power;
@@ -100,7 +100,7 @@ fp32 right_front_3508_PID[3] = {speed_3508_KP, speed_3508_KI, speed_3508_KD};
 fp32 right_back_3508_PID[3] = {speed_3508_KP, speed_3508_KI, speed_3508_KD};
 fp32 left_back_3508_PID[3] = {speed_3508_KP, speed_3508_KI, speed_3508_KD};
 fp32 speed_adjust_PID[3] = {speed_adjust_KP, speed_adjust_KI, speed_adjust_KD};
-fp32 low_power_adjust_PID[3] = {low_power_KP, low_power_KI, low_power_KD};
+//fp32 low_power_adjust_PID[3] = {low_power_KP, low_power_KI, low_power_KD};
 
 extern motor_measure_t LEFT_FRONT_6020_Measure;
 extern motor_measure_t RIGHT_FRONT_6020_Measure;
@@ -178,7 +178,7 @@ void ChassisInit()
 	
 	PID_init(&speed_adjust_pid,PID_POSITION,speed_adjust_PID,1.0,0);
 	
-	PID_init(&low_power_adjust_pid,PID_POSITION,low_power_adjust_PID,0.5,1);
+	//PID_init(&low_power_adjust_pid,PID_POSITION,low_power_adjust_PID,0.5,1);
 	//KalmanFilter_init(&Power_kf, 0.0f , 0.0001f,0.0118f ,0.0,50.0,2.0);//A,B,P,Q,R                   //����
 	first_order_filter_init(&current_6020_filter_type,0.002,0.1);
 	first_order_filter_init(&current_3508_filter_type,0.002,0.1);
@@ -389,8 +389,8 @@ void ChassisCommandUpdate()
 		else if(((CMS_Data.cms_status) & (uint16_t) 1) != 1 && CMS_Data.Mode == HIGH_SPEED &&Power_Max<=120)
 		{
 			speed_up_time=0;
-			Chassis.vx = Chassis.vx * 1.4;
-			Chassis.vy = Chassis.vy * 1.4;
+			Chassis.vx = Chassis.vx * 1.1;
+			Chassis.vy = Chassis.vy * 1.1;
 			Chassis.wz = 1.0 * Chassis.wz ;
 		}
 		else{
@@ -403,10 +403,10 @@ void ChassisCommandUpdate()
 			i++;
 		}
 		if(((CMS_Data.cms_status) & (uint16_t) 1) != 1 && CMS_Data.Mode == FLY){
-			Chassis.WheelSpeed[0] = -speed[0];
-			Chassis.WheelSpeed[1] = speed[1];
-			Chassis.WheelSpeed[2] = speed[2];
-			Chassis.WheelSpeed[3] = -speed[3];
+			Chassis.WheelSpeed[0] = -0.75*speed[0];
+			Chassis.WheelSpeed[1] = 0.75*speed[1];
+			Chassis.WheelSpeed[2] = 1.34*speed[2];
+			Chassis.WheelSpeed[3] = -1.34*speed[3];
 		}
 		else{
 			Chassis.WheelSpeed[0] = -speed[0];
@@ -493,15 +493,6 @@ void ChassisCurrentUpdate()
 	Chassis.Current[3] = PID_calc(&left_back_6020_speed_pid, LEFT_BACK_6020_Measure.speed_rpm, Chassis.speed_6020[3]);
 	//wz=LEFT_FRONT_3508_Measure.speed_rpm / Maxspeed;
 	Chassis_motor3508_speed_adjust(&Chassis,stall_kp);
-	if(power_heat_data_t.chassis_power<Power_Max  
-		&& (Fabs(LEFT_FRONT_3508_Measure.speed_rpm) < 100 || Fabs(RIGHT_FRONT_3508_Measure.speed_rpm) < 100 || Fabs(RIGHT_BACK_3508_Measure.speed_rpm) < 100 ||Fabs(LEFT_BACK_3508_Measure.speed_rpm) < 100 ) 
-		&& (Fabs(PTZ.FBSpeed / 32767.0) > 0.05 || Fabs(PTZ.LRSpeed / 32767.0) > 0.05) 
-		&& power_heat_data_t.buffer_energy >30){
-			Chassis.WheelSpeed[0] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
-			Chassis.WheelSpeed[1] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
-			Chassis.WheelSpeed[2] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
-			Chassis.WheelSpeed[3] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
-		}
 	Chassis.Current[4] = stall_kp[0]*PID_calc(&left_front_3508_pid, LEFT_FRONT_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[0]);;
 	Chassis.Current[5] = stall_kp[1]*PID_calc(&right_front_3508_pid, RIGHT_FRONT_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[1]);
 	Chassis.Current[6] = stall_kp[2]*PID_calc(&right_back_3508_pid, RIGHT_BACK_3508_Measure.speed_rpm / Maxspeed, Chassis.WheelSpeed[2]);
@@ -520,47 +511,47 @@ void RefereeInfUpdate(ext_game_robot_status_t *referee)
 	switch(referee->chassis_power_limit)
 	{
 		case 45:
-			Power_Max = 45;v_gain=0.91;cap_gain=2.1;break;
+			Power_Max = 45;v_gain=0.91;cap_gain=2.75;break;
 		case 50:
-			Power_Max = 50;v_gain=0.95;cap_gain=2.0;break;
+			Power_Max = 50;v_gain=0.95;cap_gain=2.63;break;
 		case 55:
-			Power_Max = 55;v_gain=0.99;cap_gain=1.92;break;
+			Power_Max = 55;v_gain=0.99;cap_gain=2.53;break;
 		case 60:	
-			Power_Max = 60;v_gain=1.02;cap_gain=1.87;break;
+			Power_Max = 60;v_gain=1.02;cap_gain=2.45;break;
 		case 65:	
-			Power_Max = 65;v_gain=1.06;cap_gain=1.80;break;
+			Power_Max = 65;v_gain=1.06;cap_gain=2.36;break;
 		case 70:	
-			Power_Max = 70;v_gain=1.12;cap_gain=1.70;break;
+			Power_Max = 70;v_gain=1.12;cap_gain=2.23;break;
 		case 75:	
-			Power_Max = 75;v_gain=1.16;cap_gain=1.64;break;
+			Power_Max = 75;v_gain=1.16;cap_gain=2.16;break;
 		case 80:
 			Power_Max = 80;v_gain=1.25;cap_gain=2.0;break;//基准
 		case 85:	
-			Power_Max = 85;v_gain=1.27;cap_gain=1.50;break;
+			Power_Max = 85;v_gain=1.27;cap_gain=1.97;break;
 		case 90:	
-			Power_Max = 90;v_gain=1.29;cap_gain=1.48;break;
+			Power_Max = 90;v_gain=1.29;cap_gain=1.94;break;
 		case 95:	
-			Power_Max = 95;v_gain=1.33;cap_gain=1.43;break;
+			Power_Max = 95;v_gain=1.33;cap_gain=1.88;break;
 		case 100:	
-			Power_Max = 100;v_gain=1.36;cap_gain=1.40;break;
+			Power_Max = 100;v_gain=1.36;cap_gain=1.84;break;
 		case 120:
-			Power_Max = 120;v_gain=1.51;cap_gain=1.30;break;
+			Power_Max = 120;v_gain=1.51;cap_gain=1.66;break;
 		case 130:
-			Power_Max = 130;v_gain=1.58;cap_gain=1.05;break;
+			Power_Max = 130;v_gain=1.58;cap_gain=1.58;break;
 		case 140:
-			Power_Max = 140;v_gain=1.65;cap_gain=1.05;break;
+			Power_Max = 140;v_gain=1.65;cap_gain=1.52;break;
 		case 150:
-			Power_Max = 150;v_gain=1.73;cap_gain=1.05;break;
+			Power_Max = 150;v_gain=1.73;cap_gain=1.45;break;
 		case 160:
-			Power_Max = 160;v_gain=1.80;cap_gain=1.05;break;
+			Power_Max = 160;v_gain=1.80;cap_gain=1.39;break;
 		case 170:
-			Power_Max = 170;v_gain=1.87;cap_gain=1.05;break;
+			Power_Max = 170;v_gain=1.87;cap_gain=1.34;break;
 		case 180:
-			Power_Max = 180;v_gain=1.93;cap_gain=1.05;break;
+			Power_Max = 180;v_gain=1.93;cap_gain=1.30;break;
 		case 190:
-			Power_Max = 190;v_gain=2.00;cap_gain=1.05;break;
+			Power_Max = 190;v_gain=2.00;cap_gain=1.25;break;
 		case 200:
-			Power_Max = 200;v_gain=2.100;cap_gain=1.05;break;
+			Power_Max = 200;v_gain=2.100;cap_gain=1.19;break;
 		default:
 			Power_Max = 45;v_gain=0.85;cap_gain=1.0;break;
 		
@@ -683,7 +674,7 @@ uint8_t chassis_powerloop(Chassis_t *Chassis)
 		}
 		else if (power_heat_data_t.buffer_energy < 30 && power_heat_data_t.buffer_energy >= 20)
 		{
-			Plimit = 0.3;
+			Plimit = 0.25;
 			//power_scale = (Power_Max-2) / lijupower;
 			
 		}
@@ -716,21 +707,6 @@ uint8_t chassis_powerloop(Chassis_t *Chassis)
 		Chassis->Current[7] *= (power_scale) * (Plimit);
 
 	}
-	if(power_heat_data_t.chassis_power<Power_Max  
-		&& (Fabs(LEFT_FRONT_3508_Measure.speed_rpm) < 100 || Fabs(RIGHT_FRONT_3508_Measure.speed_rpm) < 100 || Fabs(RIGHT_BACK_3508_Measure.speed_rpm) < 100 ||Fabs(LEFT_BACK_3508_Measure.speed_rpm) < 100 ) 
-		&& (Fabs(PTZ.FBSpeed / 32767.0) > 0.05 || Fabs(PTZ.LRSpeed / 32767.0) > 0.05) 
-		&& power_heat_data_t.buffer_energy >30){
-			Chassis->Current[4] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
-			Chassis->Current[5] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
-			Chassis->Current[6] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
-			Chassis->Current[7] *= (1+PID_calc(&low_power_adjust_pid,power_heat_data_t.chassis_power,Power_Max));
-			for(uint8_t i=0;i<4;i++){
-				if(Chassis->Current[i+4]>8000)
-					Chassis->Current[i+4]=8000;
-				if(Chassis->Current[i+4]<-8000)
-					Chassis->Current[i+4]=-8000;
-			}
-		}
 	//			if(CMS_charge_power < 0.0f)
 	//			{
 	//			CMS_charge_power = 0.0f;

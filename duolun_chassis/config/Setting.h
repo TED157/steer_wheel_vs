@@ -38,10 +38,10 @@
 #define YawMotorId                                     	0x205
 
 #ifdef BLACK_STEERWHEEL
-#define FollowAngle              						-76.3203506f//26.134f
+#define FollowAngle              						-49.9499359f//26.134f
 #endif
 #ifdef YELLOW_STEERWHEEL
-#define FollowAngle              						-49.9499359f//26.134f
+#define FollowAngle              						-76.3203506f//26.134f
 #endif 
 
 #define FOLLOW_KP						0.033f
