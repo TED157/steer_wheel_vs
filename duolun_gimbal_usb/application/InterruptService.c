@@ -61,7 +61,7 @@ extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim5;
-extern easy_kalman_t pitch_kf;
+extern DM_motor_t DamiaoPitchMotorMeasure;
 
 OfflineCounter_t OfflineCounter;
 OfflineMonitor_t OfflineMonitor;
@@ -463,7 +463,7 @@ void TimerTaskLoop1000Hz(void)
     if ((RefereeInterpolationTimer % 100) == 0) {
         AmmoHeatSettlementInterpolation();
     }
-
+	//DMA_printf("%d,%f\r\n",DamiaoPitchMotorMeasure.stall_counter,DamiaoPitchMotorMeasure.para.vel);
 }
 
 

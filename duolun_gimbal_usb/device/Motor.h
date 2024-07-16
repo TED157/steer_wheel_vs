@@ -66,11 +66,12 @@ typedef struct
 
 typedef struct
 {
-	int8_t id;
-	uint8_t start_flag;
+	int8_t         id;
 	motor_fbpara_t para;
-	uint8_t error_clear_flag;
-	uint32_t error_clear_time;
+	uint8_t        error_clear_flag;
+	uint32_t       error_clear_time;
+	uint8_t        stall_flag;
+	uint16_t       stall_counter;
 } DM_motor_t;
 
 typedef enum
@@ -78,6 +79,7 @@ typedef enum
   DaMiao_DISABLE = 0,
   DaMiao_ENABLE,
   DaMiao_CLear_ERROR,
+  DaMiao_Zero_SET,
 }DaMiao_CMD_e;
 
 extern void GimbalMotorControl(int16_t YawMotor, int16_t PitchMotor, int16_t RotorMotor, int16_t AmmoLeftMotor, int16_t AmmoRightMotor);
@@ -85,5 +87,5 @@ extern void MotorProcess(uint32_t MotorID, CAN_HandleTypeDef *hcan, uint8_t* mes
 extern void GimbalMotorMeasureUpdate(GimbalMotorMeasure_t* Gimbal);
 extern void ShootMotorMeasureUpdate(ShootMotorMeasure_t* Shoot);
 extern void DaMiaoCanSend(float DaMiao);
-
+extern void DaMiao_Motor_Init(DM_motor_t* DM_Motor);
 #endif

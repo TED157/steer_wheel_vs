@@ -25,19 +25,20 @@
 #include "InterruptService.h"
 #include "pid.h"
 #include "CalculateThread.h"
-#define DaMiao_Motor_Enable_Message(message)           for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfc;     
+#define DaMiao_Motor_Enable_Message(message)              for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfc;     
 #define DaMiao_Motor_Disable_Message(message)             for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfd;
-#define DaMiao_Motor_Error_Clear_Message(message)      for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfb;
+#define DaMiao_Motor_Error_Clear_Message(message)         for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfb;
+#define DaMiao_Motor_ZERO_SET_Message(message)            for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfe;
 
 #ifdef BLACK_STEERWHEEL
-#define DAMIAO_MAX_ANGLE -3.2
-#define DAMIAO_MIN_ANGLE -3.9
+#define DAMIAO_MAX_ANGLE 1.68
+#define DAMIAO_MIN_ANGLE 0.83
 #endif
 #ifdef YELLOW_STEERWHEEL
-#define DAMIAO_MAX_ANGLE 2.1
-#define DAMIAO_MIN_ANGLE 1.34
+#define DAMIAO_MAX_ANGLE 0.33
+#define DAMIAO_MIN_ANGLE -0.50
 #endif
-
+float tor=-0.8;
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
 extern OfflineMonitor_t OfflineMonitor;
@@ -60,6 +61,9 @@ float uint_to_float(int x_int, float x_min, float x_max, int bits);
 void DaMiao_ctrl_Command(uint8_t *message, DaMiao_CMD_e CMD);
 void dm4310_fbdata(DM_motor_t *motor, uint8_t *rx_data);
 void DaMiao_mit_ctrl(uint8_t *data, float torq);
+void DaMiaoCanSend(float DaMiao);
+void DaMiao_Motor_Init(DM_motor_t* DM_Motor);
+void DaMiao_Motor_Stall_Monitor(DM_motor_t* DM_Motor);
 
 void GimbalMotorControl(int16_t YawMotor, int16_t PitchMotor, int16_t RotorMotor, int16_t AmmoLeftMotor, int16_t AmmoRightMotor)
 {
@@ -125,7 +129,9 @@ void DaMiaoCanSend(float DaMiao)
 	if(DamiaoPitchMotorMeasure.para.pos >= DAMIAO_MAX_ANGLE && DaMiao > 0)
 		DaMiao = 0;
 	else if(DamiaoPitchMotorMeasure.para.pos <= DAMIAO_MIN_ANGLE && DaMiao < 0)
-		DaMiao = -0.5;
+		DaMiao = tor;
+	DaMiao_Motor_Stall_Monitor(&DamiaoPitchMotorMeasure);
+	if(DamiaoPitchMotorMeasure.stall_flag==1) DaMiao/=((DaMiao>0?DaMiao:-DaMiao)*2);
     DaMiao_mit_ctrl(damiao_data,DaMiao);
     HAL_CAN_AddTxMessage(&hcan2, &can_tx_message, damiao_data, &send_mail_box);
 }
@@ -298,14 +304,47 @@ void DaMiao_ctrl_Command(uint8_t *message, DaMiao_CMD_e CMD)
     switch (CMD)
     {
     case DaMiao_DISABLE:
-        DaMiao_Motor_Disable_Message(message);
+        DaMiao_Motor_Disable_Message(message)
         break;
     case DaMiao_ENABLE:
-        DaMiao_Motor_Enable_Message(message);
+        DaMiao_Motor_Enable_Message(message)
         break;
     case DaMiao_CLear_ERROR:
         DaMiao_Motor_Error_Clear_Message(message)
+        break;
+    case DaMiao_Zero_SET:
+        DaMiao_Motor_ZERO_SET_Message(message)
+        break;
     default:
         break;
     }
+}
+
+void DaMiao_Motor_Init(DM_motor_t* DM_Motor)
+{
+	DM_Motor->error_clear_flag=0;
+	DM_Motor->error_clear_time=0;
+	DM_Motor->stall_flag=0;
+	DM_Motor->stall_counter=0;
+	DaMiao_ctrl_Command(DaMiao_message,DaMiao_ENABLE);
+    HAL_CAN_AddTxMessage(&hcan2, &can_tx_message, DaMiao_message, &send_mail_box);
+}
+
+void DaMiao_Motor_Stall_Monitor(DM_motor_t* DM_Motor)
+{
+	if((DM_Motor->para.tor >= 1.0f  || DM_Motor->para.tor <= -1.0f || DM_Motor->stall_flag==1) && (DM_Motor->para.vel>0?DM_Motor->para.vel:-DM_Motor->para.vel)<0.2)
+	{
+		DM_Motor->stall_counter++;
+		if(DM_Motor->stall_counter>=65535) DM_Motor->stall_counter=65535;
+	}
+	else if((DM_Motor->para.vel>0?DM_Motor->para.vel:-DM_Motor->para.vel)>0.5)
+	{
+		DM_Motor->stall_counter=0;
+	}
+	if(DM_Motor->stall_counter>=500){
+		DM_Motor->stall_flag=1;
+	}
+	else{
+		DM_Motor->stall_flag=0;
+	}
 }

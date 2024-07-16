@@ -99,7 +99,7 @@ void CalculateThread(void const * pvParameters)
 //    LoopFifoFp32_init(&Gimbal.ImuBuffer.YawLoopPointer, Gimbal.ImuBuffer.YawAddress, 64);//��������fifo��ʼ��
 //    LoopFifoFp32_init(&Gimbal.ImuBuffer.PitchLoopPointer, Gimbal.ImuBuffer.PitchAddress, 64);
     first_order_filter_init(&pitch_aimbot_filter, 1000, &pitch_aimbot_filter_param);//�˲�����ʼ��
-	DamiaoPitchMotorMeasure.error_clear_flag = 0;
+	DaMiao_Motor_Init(&DamiaoPitchMotorMeasure);
 	//HAL_GPIO_WritePin(Laser_GPIO_Port, Laser_Pin, GPIO_PIN_RESET);
 	while(1)
     {
@@ -149,7 +149,7 @@ void CalculateThread(void const * pvParameters)
                             Gimbal.Output.AmmoLeft,
                             Gimbal.Output.AmmoRight
                         );
-				DaMiaoCanSend(Gimbal.Output.DaMiao_Pitch * DAMIAO_PITCH_MOTOR_DIRECTION);
+				DaMiaoCanSend(Gimbal.Output.DaMiao_Pitch * DAMIAO_PITCH_MOTOR_DIRECTION-0.5);
 				osDelay(1);
     }
 }
