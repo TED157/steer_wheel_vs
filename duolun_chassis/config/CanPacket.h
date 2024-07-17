@@ -7,8 +7,8 @@
 #include "RefereeBehaviour.h"
 
 
-//×ÔÃéÄ¿±êÏà»úÏÂµÄ×ø±êÊý¾Ý°ü
-#define AIMBOT_POSITION_ID                          0x141
+//ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½
+#define ENEMY_ID                          0x141
 
 typedef enum
 {
@@ -69,7 +69,7 @@ extern uint8_t *send_robot_information(void);
 extern uint8_t *send_enemy_information(void);
 extern uint8_t *send_game_status(void);
 
-//ÕâÁ½¸ö½á¹¹ÌåµÄÊ¹ÓÃ£¬²Î¼û¡¶CAN×ÜÏßÊý¾ÝÄÚÈÝ¼°Êý¾Ý¸ñÊ½¹æ¶¨¡·
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½ï¿½Ê¹ï¿½Ã£ï¿½ï¿½Î¼ï¿½ï¿½ï¿½CANï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¼ï¿½ï¿½ï¿½ï¿½Ý¸ï¿½Ê½ï¿½æ¶¨ï¿½ï¿½
 extern Aim_t Aim;
 extern PTZ_t PTZ;
 

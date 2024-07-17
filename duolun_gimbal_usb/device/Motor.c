@@ -114,7 +114,7 @@ void DaMiaoCanSend(float DaMiao)
     can_tx_message.DLC = 0x08;
     // 达妙电机控制指令发送（扭矩）
     can_tx_message.StdId = DAMIAO_PITCH_MOTOR_SLAVE_ID;
-    if(OfflineMonitor.DaMiao_PitchMotor){
+    if(DamiaoPitchMotorMeasure.para.state != 1){
         DaMiao_ctrl_Command(DaMiao_message,DaMiao_ENABLE);
         HAL_CAN_AddTxMessage(&hcan2, &can_tx_message, DaMiao_message, &send_mail_box);
     }

@@ -485,15 +485,8 @@ void TimerTaskLoop100Hz(void)
 	}
 	if(prescaler==20){
 		prescaler=0;
-		int16_t coords[2]={0};
-		if(Aimbot.TargetX-(int)(Aimbot.TargetX)>0.5)
-			Aimbot.TargetX+=0.5;
-		if(Aimbot.TargetY-(int)(Aimbot.TargetY)>0.5)
-			Aimbot.TargetY+=0.5;
-		coords[0]=(Aimbot.TargetX);
-		coords[1]=(Aimbot.TargetY-1100.2);
-		CanSendMessage(&hcan1,AIMBOT_POSITION_ID,4,(uint8_t *)coords);
-	}	
+		CanSendMessage(&hcan1,ENEMY_ID,2,(uint8_t *)(&Aimbot.AimbotState));
+    }
 	prescaler++;
 	//GimbalImuPacketSend();
 	//UART_printf("%f,%f\n",Gimbal.MotorMeasure.ShootMotor.AmmoLeftMotorSpeed,Gimbal.MotorMeasure.ShootMotor.AmmoRightMotorSpeed);

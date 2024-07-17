@@ -43,7 +43,7 @@ uint16_t right_counter = 0;
 uint16_t feet_left_counter = 0;
 uint16_t feet_right_counter = 0;
 uint16_t cms_offline_counter = 0;
-int16_t coords[2];
+uint8_t enemy[2];
 extern uint32_t F_Motor[8];
 OfflineCounter_t OfflineCounter;
 OfflineMonitor_t OfflineMonitor;
@@ -144,17 +144,12 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				get_motor_measure(&YawMotorMeasure,rx_data);
 			break;
 			}
-			/*-------------------------------------ÔÆÌ¨Êý¾ÝÏÂ·¢½ÓÊÕ-------------------------------------*/
+			/*-------------------------------------ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½-------------------------------------*/
 			case DefaultAimStatusAndTargetId:
 			{
 				memcpy(&Aim,rx_data,sizeof(Aim_t));
 				break;
 			}
-//			case AIMBOT_POSITION_ID:
-//			{
-//				memcpy(coords,rx_data,sizeof(coords));
-//				break;
-//			}
 			case DefaulPTZRequestAndStatusId:
 			{
 				OfflineCounter.PTZnode = 0;
@@ -169,6 +164,12 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				//CMS_Data.cms_cap_p = int16_to_float(p,32000, -32000,500, 0);
 				CMS_Data.cms_cap_v = int16_to_float(v,32000, -32000,30, 1);
 				CMS_Data.cms_status = ((uint16_t)rx_data[4] << 8| rx_data[5]);
+				break;
+			}
+			case ENEMY_ID:
+			{
+				enemy[0] = rx_data[0];
+				enemy[1] = rx_data[1];
 				break;
 			}
 			default:
@@ -306,7 +307,7 @@ void CommuniteOfflineCounterUpdate(void)
 	OfflineCounter.Motor[6]++;
 	OfflineCounter.Motor[7]++;
 	
-	//OfflineCounter.Coords++;
+	OfflineCounter.Enemy++;
 	
 	OfflineCounter.PTZnode++;
 }
@@ -329,14 +330,14 @@ void CommuniteOfflineStateUpdate(void)
 		OfflineMonitor.PTZnode = 1;
 	else 
 		OfflineMonitor.PTZnode = 0;
-//    if(OfflineCounter.Coords > COORDS_TIMEMAX)
-//	{
-//		OfflineMonitor.Coords=1;
-//	}
-//	else
-//	{
-//		OfflineMonitor.Coords=0;
-//	}
+   if(OfflineCounter.Enemy > COORDS_TIMEMAX)
+	{
+		OfflineMonitor.Enemy=1;
+	}
+	else
+	{
+		OfflineMonitor.Enemy=0;
+	}
 }
 
 void DeviceOfflineMonitorUpdate(OfflineMonitor_t *Monitor)

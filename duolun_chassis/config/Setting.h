@@ -6,8 +6,7 @@
 //用于区分两辆舵轮
 
 #define YELLOW_STEERWHEEL 
-//
-#define BLACK_STEERWHEEL
+//#define BLACK_STEERWHEEL
 
 #define LENGTH 1000
 #define gen2 1.414213562373/2.0
@@ -59,8 +58,8 @@
 #define SPEED_6020_KI							0.0f
 #define SPEED_6020_KD							0.0f
 
-#define POSITION_6020_KP                        4.2f
-#define POSITION_6020_KI                        0.0015f
+#define POSITION_6020_KP                        4.3f
+#define POSITION_6020_KI                        0.0915f
 #define POSITION_6020_KD                        0.000002f
 
 #define speed_3508_KP							3600.0f

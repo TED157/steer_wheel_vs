@@ -14,8 +14,8 @@
 //Walk at night and don't look back,there are ghost
 #define AIMBOT_GHOST                                0x161
 
-//×ÔÃéÄ¿±êÏà»úÏÂµÄ×ø±êÊý¾Ý°ü
-#define AIMBOT_POSITION_ID                          0x141
+//æ­£åœ¨çž„å‡†çš„æ•Œäºº
+#define ENEMY_ID                                    0x141
 
 #define GINBAL_REQUEST_STATE_ID                     0x10
 
