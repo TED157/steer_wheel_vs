@@ -144,7 +144,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				get_motor_measure(&YawMotorMeasure,rx_data);
 			break;
 			}
-			/*-------------------------------------��̨�����·�����-------------------------------------*/
+			/*-------------------------------------云台数据下发接收-------------------------------------*/
 			case DefaultAimStatusAndTargetId:
 			{
 				memcpy(&Aim,rx_data,sizeof(Aim_t));

@@ -16,7 +16,7 @@
 #include "CMS.h"
 
 #define START_POWER 15.0f
-int32_t current=0;
+
 Chassis_t Chassis;
 RC_ctrl_t Remote;
 EulerSystemMeasure_t Imu;

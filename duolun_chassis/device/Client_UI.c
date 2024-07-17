@@ -1,8 +1,8 @@
 /*************************************************************
 
-RM�Զ���UIЭ��       ����RM2020ѧ������ͨ��Э��V1.1
+RM自定义UI协议       基于RM2020学生串口通信协议V1.1
 
-ɽ��������ѧ ����ս�� ����@Rjgawuie
+山东理工大学 齐奇战队 东东@Rjgawuie
 
 **************************************************************/
 
@@ -16,11 +16,11 @@ RM�Զ���UIЭ��       ����RM2020ѧ������ͨ���
 #include "RefereeBehaviour.h"
 #include "Client_UI.h"
 #include "CanPacket.h"
-unsigned char UI_Seq;                      //�����
+unsigned char UI_Seq;                      //包序号
 uint8_t UIsend_buffer[1024]  ;//__attribute__((section(".ARM.__at_0x24000400")));
 uint8_t top=0;
 uint8_t head[128],num=0,locked=0;
-/****************************************��������ӳ��************************************/
+/****************************************串口驱动映射************************************/
 void UI_SendByte(unsigned char ch)
 {
    //USART_SendData(USART6,ch);
@@ -28,7 +28,7 @@ void UI_SendByte(unsigned char ch)
   // while((USART6->SR & 0x4) == RESET);
    //while (USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET);	
 }
-/****************************************��������ӳ��************************************/
+/****************************************串口驱动映射************************************/
 uint8_t UImessage_add(uint8_t *Data,uint8_t len)
 {
 		while(top+len>1024)		osDelay(1);
@@ -46,17 +46,17 @@ uint8_t UImessage_add(uint8_t *Data,uint8_t len)
 		return 1;
 }
 
-/********************************************ɾ������*************************************
-**������Del_Operate  ��Ӧͷ�ļ�ɾ������
-        Del_Layer    Ҫɾ���Ĳ� ȡֵ0-9
+/********************************************删除操作*************************************
+**参数：Del_Operate  对应头文件删除操作
+        Del_Layer    要删除的层 取值0-9
 *****************************************************************************************/
 
 void UI_Delete(u8 Del_Operate,u8 Del_Layer)
 {
 
-	unsigned char *framepoint;                      //��дָ��
-	u16 frametail=0xFFFF;                        //CRC16У��ֵ
-	int loop_control;                       //For����ѭ������
+	unsigned char *framepoint;                      //读写指针
+	u16 frametail=0xFFFF;                        //CRC16校验值
+	int loop_control;                       //For函数循环控制
    
 	uint8_t *p=Info_Arr;
 	uint8_t len=0;	
@@ -71,7 +71,7 @@ void UI_Delete(u8 Del_Operate,u8 Del_Layer)
 	framehead.Data_Length=8;
 	framehead.Seq=UI_Seq;
 	framehead.CRC8=Get_CRC8_Check_Sum_UI(framepoint,4,0xFF);
-	framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //����ͷ����
+	framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //填充包头数据
    
    
 	datahead.Data_ID=UI_Data_ID_Del;
@@ -79,25 +79,25 @@ void UI_Delete(u8 Del_Operate,u8 Del_Layer)
 	if(robot_state.robot_id == 1)	
 	{
 		datahead.Sender_ID=UI_Data_RobotID_RHero;
-		datahead.Receiver_ID=UI_Data_CilentID_RHero;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_RHero;                          //填充操作数据
 		
 	}
 	else if(robot_state.robot_id == 101)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BHero;
-		datahead.Receiver_ID=UI_Data_CilentID_BHero;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BHero;                          //填充操作数据
   
 	}
 	else if(robot_state.robot_id == 3)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_RStandard1;
-		datahead.Receiver_ID=UI_Data_CilentID_RStandard1;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_RStandard1;                          //填充操作数据
   
 	}
 	else if(robot_state.robot_id == 103)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BStandard1;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard1;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard1;                          //填充操作数据
   
 	}
 	else if(robot_state.robot_id == 4)
@@ -108,7 +108,7 @@ void UI_Delete(u8 Del_Operate,u8 Del_Layer)
 	else if(robot_state.robot_id == 104)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BStandard2;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard2;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard2;                          //填充操作数据
 	}
     else if(robot_state.robot_id == 5)
 	{
@@ -118,17 +118,17 @@ void UI_Delete(u8 Del_Operate,u8 Del_Layer)
 	else if(robot_state.robot_id == 105)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BStandard3;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard3;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard3;                          //填充操作数据
 	}
    
 	del.Delete_Operate=Del_Operate;
-	del.Layer=Del_Layer;                                     //������Ϣ
+	del.Layer=Del_Layer;                                     //控制信息
    
 	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(framehead),frametail);
 	framepoint=(unsigned char *)&datahead;
 	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(datahead),frametail);
 	framepoint=(unsigned char *)&del;
-	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(del),frametail);  //CRC16У��ֵ����
+	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(del),frametail);  //CRC16校验值计算
 	
 	framepoint=(unsigned char *)&framehead;
 	memcpy(p,framepoint,sizeof(framehead));  
@@ -150,19 +150,19 @@ void UI_Delete(u8 Del_Operate,u8 Del_Layer)
 	p+=sizeof(frametail);
 	len+=sizeof(frametail);
 
-	UI_Seq++;                                                         //�㨹D��o?+1
+	UI_Seq++;                                                         //°üDòo?+1
 	UImessage_add(Info_Arr,len);
-                                                           //�����+1
+                                                           //包序号+1
 }
-/************************************************����ֱ��*************************************************
-**������*image Graph_Data���ͱ���ָ�룬���ڴ��ͼ������
-        imagename[3]   ͼƬ���ƣ����ڱ�ʶ����
-        Graph_Operate   ͼƬ��������ͷ�ļ�
-        Graph_Layer    ͼ��0-9
-        Graph_Color    ͼ����ɫ
-        Graph_Width    ͼ���߿�
-        Start_x��Start_x    ��ʼ����
-        End_x��End_y   ��������
+/************************************************绘制直线*************************************************
+**参数：*image Graph_Data类型变量指针，用于存放图形数据
+        imagename[3]   图片名称，用于标识更改
+        Graph_Operate   图片操作，见头文件
+        Graph_Layer    图层0-9
+        Graph_Color    图形颜色
+        Graph_Width    图形线宽
+        Start_x、Start_x    开始坐标
+        End_x、End_y   结束坐标
 **********************************************************************************************************/
         
 void Line_Draw(Graph_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_Layer,u32 Graph_Color,u32 Graph_Width,u32 Start_x,u32 Start_y,u32 End_x,u32 End_y)
@@ -180,15 +180,15 @@ void Line_Draw(Graph_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_L
    image->end_y = End_y;
 }
 
-/************************************************���ƾ���*************************************************
-**������*image Graph_Data���ͱ���ָ�룬���ڴ��ͼ������
-        imagename[3]   ͼƬ���ƣ����ڱ�ʶ����
-        Graph_Operate   ͼƬ��������ͷ�ļ�
-        Graph_Layer    ͼ��0-9
-        Graph_Color    ͼ����ɫ
-        Graph_Width    ͼ���߿�
-        Start_x��Start_x    ��ʼ����
-        End_x��End_y   �������꣨�Զ������꣩
+/************************************************绘制矩形*************************************************
+**参数：*image Graph_Data类型变量指针，用于存放图形数据
+        imagename[3]   图片名称，用于标识更改
+        Graph_Operate   图片操作，见头文件
+        Graph_Layer    图层0-9
+        Graph_Color    图形颜色
+        Graph_Width    图形线宽
+        Start_x、Start_x    开始坐标
+        End_x、End_y   结束坐标（对顶角坐标）
 **********************************************************************************************************/
         
 void Rectangle_Draw(Graph_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_Layer,u32 Graph_Color,u32 Graph_Width,u32 Start_x,u32 Start_y,u32 End_x,u32 End_y)
@@ -207,15 +207,15 @@ void Rectangle_Draw(Graph_Data *image,char imagename[3],u32 Graph_Operate,u32 Gr
    image->end_y = End_y;
 }
 
-/************************************************������Բ*************************************************
-**������*image Graph_Data���ͱ���ָ�룬���ڴ��ͼ������
-        imagename[3]   ͼƬ���ƣ����ڱ�ʶ����
-        Graph_Operate   ͼƬ��������ͷ�ļ�
-        Graph_Layer    ͼ��0-9
-        Graph_Color    ͼ����ɫ
-        Graph_Width    ͼ���߿�
-        Start_x��Start_x    Բ������
-        Graph_Radius  ͼ�ΰ뾶
+/************************************************绘制整圆*************************************************
+**参数：*image Graph_Data类型变量指针，用于存放图形数据
+        imagename[3]   图片名称，用于标识更改
+        Graph_Operate   图片操作，见头文件
+        Graph_Layer    图层0-9
+        Graph_Color    图形颜色
+        Graph_Width    图形线宽
+        Start_x、Start_x    圆心坐标
+        Graph_Radius  图形半径
 **********************************************************************************************************/
         
 void Circle_Draw(Graph_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_Layer,u32 Graph_Color,u32 Graph_Width,u32 Start_x,u32 Start_y,u32 Graph_Radius)
@@ -233,16 +233,16 @@ void Circle_Draw(Graph_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph
    image->radius = Graph_Radius;
 }
 
-/************************************************����Բ��*************************************************
-**������*image Graph_Data���ͱ���ָ�룬���ڴ��ͼ������
-        imagename[3]   ͼƬ���ƣ����ڱ�ʶ����
-        Graph_Operate   ͼƬ��������ͷ�ļ�
-        Graph_Layer    ͼ��0-9
-        Graph_Color    ͼ����ɫ
-        Graph_Width    ͼ���߿�
-        Graph_StartAngle,Graph_EndAngle    ��ʼ����ֹ�Ƕ�
-        Start_y,Start_y    Բ������
-        x_Length,y_Length   x,y�������᳤���ο���Բ
+/************************************************绘制圆弧*************************************************
+**参数：*image Graph_Data类型变量指针，用于存放图形数据
+        imagename[3]   图片名称，用于标识更改
+        Graph_Operate   图片操作，见头文件
+        Graph_Layer    图层0-9
+        Graph_Color    图形颜色
+        Graph_Width    图形线宽
+        Graph_StartAngle,Graph_EndAngle    开始，终止角度
+        Start_y,Start_y    圆心坐标
+        x_Length,y_Length   x,y方向上轴长，参考椭圆
 **********************************************************************************************************/
         
 void Arc_Draw(Graph_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_Layer,u32 Graph_Color,u32 Graph_StartAngle,u32 Graph_EndAngle,u32 Graph_Width,u32 Start_x,u32 Start_y,u32 x_Length,u32 y_Length)
@@ -266,17 +266,17 @@ void Arc_Draw(Graph_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_La
 
 
 
-/************************************************���Ƹ���������*************************************************
-**������*image Graph_Data���ͱ���ָ�룬���ڴ��ͼ������
-        imagename[3]   ͼƬ���ƣ����ڱ�ʶ����
-        Graph_Operate   ͼƬ��������ͷ�ļ�
-        Graph_Layer    ͼ��0-9
-        Graph_Color    ͼ����ɫ
-        Graph_Width    ͼ���߿�
-        Graph_Size     �ֺ�
-        Graph_Digit    С��λ��
-        Start_x��Start_x    ��ʼ����
-        Graph_Float   Ҫ��ʾ�ı���
+/************************************************绘制浮点型数据*************************************************
+**参数：*image Graph_Data类型变量指针，用于存放图形数据
+        imagename[3]   图片名称，用于标识更改
+        Graph_Operate   图片操作，见头文件
+        Graph_Layer    图层0-9
+        Graph_Color    图形颜色
+        Graph_Width    图形线宽
+        Graph_Size     字号
+        Graph_Digit    小数位数
+        Start_x、Start_x    开始坐标
+        Graph_Float   要显示的变量
 **********************************************************************************************************/
         
 void Float_Draw(Float_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_Layer,u32 Graph_Color,u32 Graph_Size,u32 Graph_Digit,u32 Graph_Width,u32 Start_x,u32 Start_y,float Graph_Float)
@@ -299,17 +299,17 @@ void Float_Draw(Float_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_
 
 
 
-/************************************************�����ַ�������*************************************************
-**������*image Graph_Data���ͱ���ָ�룬���ڴ��ͼ������
-        imagename[3]   ͼƬ���ƣ����ڱ�ʶ����
-        Graph_Operate   ͼƬ��������ͷ�ļ�
-        Graph_Layer    ͼ��0-9
-        Graph_Color    ͼ����ɫ
-        Graph_Width    ͼ���߿�
-        Graph_Size     �ֺ�
-        Graph_Digit    �ַ�����
-        Start_x��Start_x    ��ʼ����
-        *Char_Data          �������ַ�����ʼ��ַ
+/************************************************绘制字符型数据*************************************************
+**参数：*image Graph_Data类型变量指针，用于存放图形数据
+        imagename[3]   图片名称，用于标识更改
+        Graph_Operate   图片操作，见头文件
+        Graph_Layer    图层0-9
+        Graph_Color    图形颜色
+        Graph_Width    图形线宽
+        Graph_Size     字号
+        Graph_Digit    字符个数
+        Start_x、Start_x    开始坐标
+        *Char_Data          待发送字符串开始地址
 **********************************************************************************************************/
         
 void Char_Draw(String_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_Layer,u32 Graph_Color,u32 Graph_Size,u32 Graph_Digit,u32 Graph_Width,u32 Start_x,u32 Start_y,char *Char_Data)
@@ -335,19 +335,19 @@ void Char_Draw(String_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_
    }
 }
 
-/************************************************UI���ͺ�����ʹ������Ч��*********************************
-**������ cnt   ͼ�θ���
-         ...   ͼ�α�������
+/************************************************UI推送函数（使更改生效）*********************************
+**参数： cnt   图形个数
+         ...   图形变量参数
 
 
-Tips�����ú���ֻ������1��2��5��7��ͼ�Σ�������ĿЭ��δ�漰
+Tips：：该函数只能推送1，2，5，7个图形，其他数目协议未涉及
 **********************************************************************************************************/
 int UI_ReFresh(int cnt,...)
 {
    int i,n;
    Graph_Data imageData;
-   unsigned char *framepoint;                      //��дָ��
-   u16 frametail=0xFFFF;                        //CRC16У��ֵ
+   unsigned char *framepoint;                      //读写指针
+   u16 frametail=0xFFFF;                        //CRC16校验值
    
    UI_Packhead framehead;
    UI_Data_Operate datahead;
@@ -360,7 +360,7 @@ int UI_ReFresh(int cnt,...)
    framehead.Data_Length=6+cnt*15;
    framehead.Seq=UI_Seq;
    framehead.CRC8=Get_CRC8_Check_Sum_UI(framepoint,4,0xFF);
-   framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //����ͷ����
+   framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //填充包头数据
    
    switch(cnt)
    {
@@ -382,13 +382,13 @@ int UI_ReFresh(int cnt,...)
    if(robot_state.robot_id == 1)	
    {
 		datahead.Sender_ID=UI_Data_RobotID_RHero;
-		datahead.Receiver_ID=UI_Data_CilentID_RHero;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_RHero;                          //填充操作数据
    
    }
    else if(robot_state.robot_id == 101)
   {
 		datahead.Sender_ID=UI_Data_RobotID_BHero;
-		datahead.Receiver_ID=UI_Data_CilentID_BHero;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BHero;                          //填充操作数据
   
   }
 		else if(robot_state.robot_id == 3)
@@ -399,7 +399,7 @@ int UI_ReFresh(int cnt,...)
    else if(robot_state.robot_id == 103)
   {
 		datahead.Sender_ID=UI_Data_RobotID_BStandard1;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard1;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard1;                          //填充操作数据
   
   }
 	else if(robot_state.robot_id == 4)
@@ -410,7 +410,7 @@ int UI_ReFresh(int cnt,...)
 	else if(robot_state.robot_id == 104)
   {
 		datahead.Sender_ID=UI_Data_RobotID_BStandard2;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard2;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard2;                          //填充操作数据
   }
     else if(robot_state.robot_id == 5)
 		{
@@ -420,7 +420,7 @@ int UI_ReFresh(int cnt,...)
 	else if(robot_state.robot_id == 105)
   {
 		datahead.Sender_ID=UI_Data_RobotID_BStandard3;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard3;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard3;                          //填充操作数据
   }
 	uint8_t *p=Info_Arr;
 	uint8_t len=0;
@@ -428,7 +428,7 @@ int UI_ReFresh(int cnt,...)
 	framepoint=(unsigned char *)&framehead;
 	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(framehead),frametail);
 	framepoint=(unsigned char *)&datahead;
-	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(datahead),frametail);          //CRC16У��ֵ���㣨���֣�
+	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(datahead),frametail);          //CRC16校验值计算（部分）
    
 	framepoint=(unsigned char *)&framehead;
 	memcpy(p,framepoint,sizeof(framehead));  
@@ -445,10 +445,10 @@ int UI_ReFresh(int cnt,...)
 		imageData=va_arg(ap,Graph_Data);
       
 		framepoint=(unsigned char *)&imageData;
-		frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(imageData),frametail);             //CRC16D��?��
+		frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(imageData),frametail);             //CRC16D￡?é
 		memcpy(p,framepoint,sizeof(imageData));  
 		p+=sizeof(imageData);
-		len+=sizeof(imageData);//����ͼƬ֡
+		len+=sizeof(imageData);//发送图片帧
 	}
 	framepoint=(unsigned char *)&frametail;
 	memcpy(p,framepoint,sizeof(frametail));  
@@ -457,25 +457,25 @@ int UI_ReFresh(int cnt,...)
    
 	va_end(ap);
    
-	UI_Seq++; //�����+1
+	UI_Seq++; //包序号+1
 	UImessage_add(Info_Arr,len);
 	return 0;                                                         
 }
 
 
-/************************************************UI�����ַ���ʹ������Ч��*********************************
-**������ cnt   ͼ�θ���
-         ...   ͼ�α�������
+/************************************************UI推送字符（使更改生效）*********************************
+**参数： cnt   图形个数
+         ...   图形变量参数
 
 
-Tips�����ú���ֻ������1��2��5��7��ͼ�Σ�������ĿЭ��δ�漰
+Tips：：该函数只能推送1，2，5，7个图形，其他数目协议未涉及
 **********************************************************************************************************/
 int Char_ReFresh(String_Data string_Data)
 {
 	int i;
 	String_Data imageData;
-	unsigned char *framepoint;                      //��дָ��
-	u16 frametail=0xFFFF;                        //CRC16У��ֵ
+	unsigned char *framepoint;                      //读写指针
+	u16 frametail=0xFFFF;                        //CRC16校验值
    
 	UI_Packhead framehead;
 	UI_Data_Operate datahead;
@@ -487,7 +487,7 @@ int Char_ReFresh(String_Data string_Data)
 	framehead.Data_Length=6+45;
 	framehead.Seq=UI_Seq;
 	framehead.CRC8=Get_CRC8_Check_Sum_UI(framepoint,4,0xFF);
-	framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //����ͷ����
+	framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //填充包头数据
    
 
 	datahead.Data_ID=UI_Data_ID_DrawChar;
@@ -495,12 +495,12 @@ int Char_ReFresh(String_Data string_Data)
 	if(robot_state.robot_id == 1)	
 	{
 		datahead.Sender_ID=UI_Data_RobotID_RHero;
-		datahead.Receiver_ID=UI_Data_CilentID_RHero;                          //����������   
+		datahead.Receiver_ID=UI_Data_CilentID_RHero;                          //填充操作数据   
 	}
 	else if(robot_state.robot_id == 101)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BHero;
-		datahead.Receiver_ID=UI_Data_CilentID_BHero;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BHero;                          //填充操作数据
 	}
 	else if(robot_state.robot_id == 3)
 	{
@@ -510,7 +510,7 @@ int Char_ReFresh(String_Data string_Data)
 	else if(robot_state.robot_id == 103)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BStandard1;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard1;                          //���������� 
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard1;                          //填充操作数据 
 	}
 	else if(robot_state.robot_id == 4)
 	{
@@ -520,7 +520,7 @@ int Char_ReFresh(String_Data string_Data)
 	else if(robot_state.robot_id == 104)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BStandard2;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard2;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard2;                          //填充操作数据
 	}
     else if(robot_state.robot_id == 5)
 	{
@@ -530,57 +530,57 @@ int Char_ReFresh(String_Data string_Data)
 	else if(robot_state.robot_id == 105)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BStandard3;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard3;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard3;                          //填充操作数据
 	}
 	framepoint=(unsigned char *)&framehead;
 	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(framehead),frametail);
 	framepoint=(unsigned char *)&datahead;
 	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(datahead),frametail);
 	framepoint=(unsigned char *)&imageData;
-	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(imageData),frametail);             //CRC16У��   //CRC16У��ֵ���㣨���֣�
+	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(imageData),frametail);             //CRC16校验   //CRC16校验值计算（部分）
    
 	uint8_t *p=Info_Arr;
 	uint8_t len=0;
 	framepoint=(unsigned char *)&framehead;
-	memcpy(p,framepoint,sizeof(framehead));//ͷ���ݴ��뻺����  
+	memcpy(p,framepoint,sizeof(framehead));//头内容存入缓冲区  
 	p+=sizeof(framehead);
 	len+=sizeof(framehead);
 	framepoint=(unsigned char *)&datahead;
-    memcpy(p,framepoint,sizeof(datahead));//�����ݴ��뻺����
+    memcpy(p,framepoint,sizeof(datahead));//子内容存入缓冲区
 	p+=sizeof(datahead);
 	len+=sizeof(datahead);                                                   
    
 	framepoint=(unsigned char *)&imageData;
-	memcpy(p,framepoint,sizeof(imageData));//ͼ����뻺����
+	memcpy(p,framepoint,sizeof(imageData));//图像存入缓冲区
 	p+=sizeof(imageData);
 	len+=sizeof(imageData);
    
    
 	framepoint=(unsigned char *)&frametail;
-	memcpy(p,framepoint,sizeof(frametail));//crcУ����뻺����
+	memcpy(p,framepoint,sizeof(frametail));//crc校验存入缓冲区
 	p+=sizeof(frametail);
 	len+=sizeof(frametail);
    
    
-	UI_Seq++;                                                         //�����+1
+	UI_Seq++;                                                         //包序号+1
 	UImessage_add(Info_Arr,len);
 	return 0;
 }
 
-/************************************************UI���͸�������ʹ������Ч��*********************************
-**������ cnt   ͼ�θ���
-         ...   ͼ�α�������
+/************************************************UI推送浮点数（使更改生效）*********************************
+**参数： cnt   图形个数
+         ...   图形变量参数
 
 
-Tips�����ú���ֻ������1��2��5��7��ͼ�Σ�������ĿЭ��δ�漰
+Tips：：该函数只能推送1，2，5，7个图形，其他数目协议未涉及
 **********************************************************************************************************/
 int Float_ReFresh(int cnt,...)
 {
 	int i,n;
 	Float_Data imageData;
 	imageData.graph_Float*=1000;
-	unsigned char *framepoint;                      //��дָ��
-	u16 frametail=0xFFFF;                        //CRC16У��ֵ
+	unsigned char *framepoint;                      //读写指针
+	u16 frametail=0xFFFF;                        //CRC16校验值
    
 	UI_Packhead framehead;
 	UI_Data_Operate datahead;
@@ -593,7 +593,7 @@ int Float_ReFresh(int cnt,...)
 	framehead.Data_Length=6+cnt*15;
 	framehead.Seq=UI_Seq;
 	framehead.CRC8=Get_CRC8_Check_Sum_UI(framepoint,4,0xFF);
-	framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //����ͷ����
+	framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //填充包头数据
    
 	switch(cnt)
 	{
@@ -615,12 +615,12 @@ int Float_ReFresh(int cnt,...)
 	if(robot_state.robot_id == 1)	
 	{
 		datahead.Sender_ID=UI_Data_RobotID_RHero;
-		datahead.Receiver_ID=UI_Data_CilentID_RHero;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_RHero;                          //填充操作数据
 	}
 	else if(robot_state.robot_id == 101)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BHero;
-		datahead.Receiver_ID=UI_Data_CilentID_BHero;                          //���������� 
+		datahead.Receiver_ID=UI_Data_CilentID_BHero;                          //填充操作数据 
 	}
 	else if(robot_state.robot_id == 3)
 	{
@@ -630,7 +630,7 @@ int Float_ReFresh(int cnt,...)
 	else if(robot_state.robot_id == 103)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BStandard1;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard1;                          //���������� 
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard1;                          //填充操作数据 
 	}
 	else if(robot_state.robot_id == 4)
 	{
@@ -640,7 +640,7 @@ int Float_ReFresh(int cnt,...)
 	else if(robot_state.robot_id == 104)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BStandard2;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard2;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard2;                          //填充操作数据
 	}
     else if(robot_state.robot_id == 5)
 	{
@@ -650,7 +650,7 @@ int Float_ReFresh(int cnt,...)
 	else if(robot_state.robot_id == 105)
 	{
 		datahead.Sender_ID=UI_Data_RobotID_BStandard3;
-		datahead.Receiver_ID=UI_Data_CilentID_BStandard3;                          //����������
+		datahead.Receiver_ID=UI_Data_CilentID_BStandard3;                          //填充操作数据
 	}
   
 	uint8_t *p=Info_Arr;
@@ -659,7 +659,7 @@ int Float_ReFresh(int cnt,...)
 	framepoint=(unsigned char *)&framehead;
 	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(framehead),frametail);
 	framepoint=(unsigned char *)&datahead;
-	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(datahead),frametail);          //CRC16У��ֵ���㣨���֣�
+	frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(datahead),frametail);          //CRC16校验值计算（部分）
    
 	framepoint=(unsigned char *)&framehead;
 	memcpy(p,framepoint,sizeof(framehead));  
@@ -676,10 +676,10 @@ int Float_ReFresh(int cnt,...)
 		imageData=va_arg(ap,Float_Data);
       
 		framepoint=(unsigned char *)&imageData;
-		frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(imageData),frametail);             //����CRCУ��
+		frametail=Get_CRC16_Check_Sum_UI(framepoint,sizeof(imageData),frametail);             //计算CRC校验
 		memcpy(p,framepoint,sizeof(imageData));  
 		p+=sizeof(imageData);
-		len+=sizeof(imageData);//����ͼƬ֡
+		len+=sizeof(imageData);//发送图片帧
 	}
 	framepoint=(unsigned char *)&frametail;
 	memcpy(p,framepoint,sizeof(frametail));  
@@ -688,11 +688,11 @@ int Float_ReFresh(int cnt,...)
    
 	va_end(ap);
    
-	UI_Seq++; //�����+1
+	UI_Seq++; //包序号+1
 	UImessage_add(Info_Arr,len);
 	return 0;                                                         
 }
-/*****************************************************CRC8У��ֵ����**********************************************/
+/*****************************************************CRC8校验值计算**********************************************/
 const unsigned char CRC8_INIT_UI = 0xff; 
 const unsigned char CRC8_TAB_UI[256] = 
 { 
