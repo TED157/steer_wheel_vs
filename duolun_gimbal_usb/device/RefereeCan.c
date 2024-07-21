@@ -4,7 +4,6 @@
 
 #include <string.h>
 
-
 RefereeInformation_t RefereeInformation;
 
 void RefereePowerHeatNode0InformationUpdate(uint8_t *data)
@@ -48,37 +47,37 @@ void GetRefereeInformation(RefereeInformation_t *Inf)
 {
     memcpy(Inf, &RefereeInformation, sizeof(RefereeInformation_t));
 }
-
-
-
-
-// ÈÈÁ¿±Õ»·
-
 void AmmoHeatSettlementInterpolation(void)
 {
     int16_t temp;
     // 10Hz Loop
     temp = RefereeInformation.Realtime.Ammo0Heat - (RefereeInformation.Ammo0Limit.Cooling / 10);
-    if (temp >= 0) {
+    if (temp >= 0)
+    {
         RefereeInformation.Realtime.Ammo0Heat = temp;
     }
-    else {
+    else
+    {
         RefereeInformation.Realtime.Ammo0Heat = 0;
     }
 
     temp = RefereeInformation.Realtime.Ammo1Heat - (RefereeInformation.Ammo1Limit.Cooling / 10);
-    if (temp >= 0) {
+    if (temp >= 0)
+    {
         RefereeInformation.Realtime.Ammo1Heat = temp;
     }
-    else {
+    else
+    {
         RefereeInformation.Realtime.Ammo1Heat = 0;
     }
-    
+
     temp = RefereeInformation.Realtime.Ammo2Heat - (RefereeInformation.Ammo2Limit.Cooling / 10);
-    if (temp >= 0) {
+    if (temp >= 0)
+    {
         RefereeInformation.Realtime.Ammo2Heat = temp;
     }
-    else {
+    else
+    {
         RefereeInformation.Realtime.Ammo2Heat = 0;
     }
 }
@@ -97,5 +96,3 @@ void Ammo2HeatUpdateInterpolation(void)
 {
     RefereeInformation.Realtime.Ammo2Heat += 100;
 }
-
-

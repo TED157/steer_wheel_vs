@@ -4,14 +4,14 @@
 #include "struct_typedef.h"
 #include "main.h"
 
-//#define REFEREE_DATA_ID 0x1
-//#define AIMBOT_REFEREE_DATA_ID 0x1
-//#define GIMBAL_DATA_ID 0x3
-//#define NUC_CONTROL_DATA_ID 0x4
+// #define REFEREE_DATA_ID 0x1
+// #define AIMBOT_REFEREE_DATA_ID 0x1
+// #define GIMBAL_DATA_ID 0x3
+// #define NUC_CONTROL_DATA_ID 0x4
 #define GIMBAL_IMU_0_ID 0x1
-//#define GIMBAL_IMU_1_ID 0x6
+// #define GIMBAL_IMU_1_ID 0x6
 #define AIMBOT_DATA_0_ID 0x2
-//#define AIMBOT_DATA_1_ID 0x8
+// #define AIMBOT_DATA_1_ID 0x8
 
 // 49字节
 typedef __PACKED_STRUCT
@@ -46,8 +46,8 @@ typedef __PACKED_STRUCT
     uint32_t rfid_status;
     // 小地图
     float x;
-		float y;
-		uint8_t key;
+    float y;
+    uint8_t key;
     // 包尾
     uint8_t _EOF;
 }
@@ -59,12 +59,12 @@ typedef __PACKED_STRUCT
     // 包头
     uint8_t _SOF;
     uint8_t ID;
-		// 电机数据
-		fp32 RightMotorAngle;
-		fp32 LeftMotorAngle;
-		// imu数据
-		uint32_t TimeStamp;
-		fp32 q0;
+    // 电机数据
+    fp32 RightMotorAngle;
+    fp32 LeftMotorAngle;
+    // imu数据
+    uint32_t TimeStamp;
+    fp32 q0;
     fp32 q1;
     fp32 q2;
     fp32 q3;
@@ -79,7 +79,7 @@ typedef __PACKED_STRUCT
     // 包头
     uint8_t _SOF;
     uint8_t ID;
-		// nuc控制
+    // nuc控制
     fp32 vx;
     fp32 vy;
     fp32 yaw_imu;
@@ -94,14 +94,14 @@ typedef __PACKED_STRUCT
     // 包头
     uint8_t _SOF;
     uint8_t ID;
-	// imu数据
-	uint32_t TimeStamp;
+    // imu数据
+    uint32_t TimeStamp;
     fp32 q0;
     fp32 q1;
     fp32 q2;
     fp32 q3;
-	uint8_t robot_id;
-	uint8_t mode;
+    uint8_t robot_id;
+    uint8_t mode;
     // 包尾
     uint8_t _EOF;
 }
@@ -113,24 +113,24 @@ typedef __PACKED_STRUCT
     // 包头
     uint8_t _SOF;
     uint8_t ID;
-	// 自瞄状态
-	uint8_t AimbotState;
-	uint8_t AimbotTarget;
-	// 自瞄数据
-	fp32 Pitch;
+    // 自瞄状态
+    uint8_t AimbotState;
+    uint8_t AimbotTarget;
+    // 自瞄数据
+    fp32 Pitch;
     fp32 Yaw;
-	//自瞄目标角速度
+    // 自瞄目标角速度
     fp32 TargetPitchSpeed;
     fp32 TargetYawSpeed;
-	//目标相机系下2d位置
-	fp32 TargetX;
-	fp32 TargetY;
-	//时间戳
+    // 目标相机系下2d位置
+    fp32 TargetX;
+    fp32 TargetY;
+    // 时间戳
     uint32_t SystemTimer;
     // 包尾
     uint8_t _EOF;
-	// 处理后数据
-	fp32 PitchRelativeAngle;
+    // 处理后数据
+    fp32 PitchRelativeAngle;
     fp32 YawRelativeAngle;
 }
 AimbotFrame_SCM_t;
