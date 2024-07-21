@@ -18,8 +18,8 @@
 //#define SENTRY7
 
 //用于区分两辆舵轮
-#define YELLOW_STEERWHEEL 
-//#define BLACK_STEERWHEEL
+//#define YELLOW_STEERWHEEL 
+#define BLACK_STEERWHEEL
 
 
 

@@ -1,5 +1,5 @@
 /*
-* ¿¼ÂÇµ½²ÃÅĞÏµÍ³ºÍ·¢ËÍº¯ÊıµÄ²»Í¬²½ĞÔ£¬½øĞĞÁËÍ¬²½ĞÔĞ£×¼
+* è€ƒè™‘åˆ°è£åˆ¤ç³»ç»Ÿå’Œå‘é€å‡½æ•°çš„ä¸åŒæ­¥æ€§ï¼Œè¿›è¡Œäº†åŒæ­¥æ€§æ ¡å‡†
 */
 #include "RefereeThread.h"
 #include "main.h"
@@ -15,7 +15,7 @@ extern DMA_HandleTypeDef hdma_usart6_tx;
 extern osThreadId CanSendHandle;
 extern osThreadId RefereeHandle;
 /**
-  * @brief          µ¥×Ö½Ú½â°ü
+  * @brief          å•å­—èŠ‚è§£åŒ…
   * @param[in]      void
   * @retval         none
   */
@@ -30,7 +30,7 @@ uint8_t referee_fifo_buf[REFEREE_FIFO_BUF_LENGTH];
 unpack_data_t referee_unpack_obj;
 
 /**
-  * @brief          ²ÃÅĞÏµÍ³ÈÎÎñ
+  * @brief          è£åˆ¤ç³»ç»Ÿä»»åŠ¡
   * @param[in]      argument: NULL
   * @retval         none
   */
@@ -49,13 +49,13 @@ void RefereeTask(void const * argument)
        
        referee_unpack_fifo_data();
        
-       osDelayUntil(&judge_task_pre_tick,5);			//5msµÄ½âËãÆµÂÊ
+       osDelayUntil(&judge_task_pre_tick,5);			//5msçš„è§£ç®—é¢‘ç‡
     }
 }
 
 
 /**
-  * @brief          µ¥×Ö½Ú½â°ü
+  * @brief          å•å­—èŠ‚è§£åŒ…
   * @param[in]      void
   * @retval         none
   */

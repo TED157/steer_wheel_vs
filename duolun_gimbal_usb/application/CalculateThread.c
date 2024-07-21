@@ -61,7 +61,7 @@ void ShootSpeedAdopt(void);
 //int dafu_flag = 0;
 
 
-bool_t single_shoot_flag=0;//��������
+bool_t single_shoot_flag=1;//��������
 bool_t auto_fire_flag=1;//�Զ����𿪹�
 bool_t switch_flag=0;//����л�����
 uint8_t No_noforce_flag=1;
@@ -84,7 +84,7 @@ uint8_t pitch_flag=0;
 float ammo_speed_l=AMMO_SPEEDSET_30MS_L;
 float ammo_speed_r=AMMO_SPEEDSET_30MS_R;
 extern uint8_t ammo_speed_ad_flag;
-extern uint8_t rune_shoot_flag;
+//extern uint8_t rune_shoot_flag;
 extern DM_motor_t DamiaoPitchMotorMeasure;
 uint16_t shoot_delay=0;
 uint8_t auto_cap_flag=0;
@@ -256,6 +256,10 @@ void GimbalStateMachineUpdate(void)
         }
 		Remote.rc.s[1]=2;
 	}
+	if(Gimbal.StateMachine == GM_MATCH)
+		HAL_GPIO_WritePin(Laser_GPIO_Port,Laser_Pin,GPIO_PIN_RESET);
+	else
+		HAL_GPIO_WritePin(Laser_GPIO_Port, Laser_Pin, GPIO_PIN_RESET);
 }
 
 void ChassisStateMachineUpdate(void)
@@ -397,27 +401,27 @@ void GimbalFireModeUpdate(void)
 									&&((count*10<=Referee.Ammo0Limit.Cooling+onelastheat&&dealta_heat>20)||Referee.Ammo0Limit.Heat==0xFFFF)	)//�������ջ����� 
 						{	
 //							DMA_printf("%d\n",GetSystemTimer());
-							rune_shoot_flag=0;
+							//rune_shoot_flag=0;
 							Gimbal.FireMode=GM_FIRE_BUSY;									
 								gimbal_fire_countdown=ROTOR_TIMESET_BUSY;
 								if(Gimbal.ControlMode==GM_AIMBOT_RUNES)
-									gimbal_fire_countdown=57;
+									gimbal_fire_countdown=59;
 								count++;
 						}
         }
 				if(Gimbal.FireMode==GM_FIRE_BUSY&&gimbal_fire_countdown<=0)
 				{
 						if(single_shoot_flag==1||Offline.RefereeAmmoLimitNode0==1)
-								gimbal_fire_countdown=400;//time interval
+								gimbal_fire_countdown=1000;//450;//time interval
 						else 
 								gimbal_fire_countdown=(int)(10000.0/(dealta_heat/1.4+Referee.Ammo0Limit.Cooling/1.8+5)-45);
 						Gimbal.FireMode=GM_FIRE_COOLING; //no shoot
 				}
-				if(Gimbal.FireMode==GM_FIRE_COOLING && gimbal_fire_countdown>0  && gimbal_fire_countdown<0 && rune_shoot_flag<1 && Gimbal.ControlMode==GM_AIMBOT_RUNES)
-				{	gimbal_fire_countdown=57;
-					Gimbal.FireMode=GM_FIRE_BUSY;
-					rune_shoot_flag++;
-				}
+//				if(Gimbal.FireMode==GM_FIRE_COOLING && gimbal_fire_countdown>0  && gimbal_fire_countdown<0 && rune_shoot_flag<1 && Gimbal.ControlMode==GM_AIMBOT_RUNES)
+//				{	gimbal_fire_countdown=57;
+//					Gimbal.FireMode=GM_FIRE_BUSY;
+//					rune_shoot_flag++;
+//				}
 				if(Gimbal.FireMode==GM_FIRE_COOLING&&gimbal_fire_countdown<=0) 
 						Gimbal.FireMode=GM_FIRE_READY;    
 				
@@ -575,6 +579,8 @@ void RotorPIDUpdate(void)
         PID_init(&Gimbal.Pid.Rotor, PID_POSITION, ROTOR_STOP, M2006_MAX_OUTPUT, M2006_MAX_IOUTPUT);
     }
     else if (FMthis == GM_FIRE_BUSY){
+		if(single_shoot_flag
+			cascade_PID_init(&Gimbal.Pid.Rotor, PID_POSITION
         PID_init(&Gimbal.Pid.Rotor, PID_POSITION, ROTOR_FORWARD, M2006_MAX_OUTPUT, M2006_MAX_IOUTPUT);
     }
     else if (FMthis == GM_FIRE_LAGGING){

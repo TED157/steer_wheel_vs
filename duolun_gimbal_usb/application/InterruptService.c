@@ -41,7 +41,7 @@ fp32 speed;
 
 uint8_t prescaler;
 uint8_t ammo_speed_ad_flag=0;
-uint8_t rune_shoot_flag=0;
+//uint8_t rune_shoot_flag=0;
 uint16_t time_period_rune=0;
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
@@ -139,7 +139,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             RefereeAmmoSpeedNode0OfflineCounterUpdate();
             RefereeAmmoSpeedNode0InformationUpdate(rx_data);
 			ammo_speed_ad_flag=1;
-			rune_shoot_flag=2;
+			//rune_shoot_flag=2;
 //			DMA_printf("%d\n",GetSystemTimer());
             break;
         }
@@ -477,12 +477,12 @@ void TimerTaskLoop500Hz(void)
 
 void TimerTaskLoop100Hz(void)
 {
-	if(!rune_shoot_flag){
-		time_period_rune++;}
-	if(time_period_rune==40)
-	{
-		rune_shoot_flag=1;
-	}
+//	if(!rune_shoot_flag){
+//		time_period_rune++;}
+//	if(time_period_rune==40)
+//	{
+//		rune_shoot_flag=1;
+//	}
 	if(prescaler==20){
 		prescaler=0;
 		CanSendMessage(&hcan1,ENEMY_ID,2,(uint8_t *)(&Aimbot.AimbotState));

@@ -60,14 +60,14 @@ Graph_Data Pingheng,Motor_offline,Posture_line;
 String_Data Ammo,aimbot,autofire,Mode,open2,open3,open4,open5,noforce;
 String_Data capcity;
 String_Data rune;
-Float_Data CapData,battery_voltage;
+Float_Data CapData,battery_voltage,HP_real_num;
 int mode_flag=0;
 uint8_t count=0,count2=0;
 extern float CapChageVoltage;
 extern EulerSystemMeasure_t    Imu;
 extern DMA_HandleTypeDef hdma_usart6_tx;
 extern uint8_t enemy[2];
-uint32_t HP_Now=0;
+int32_t HP_Now=0;
 extern OfflineMonitor_t Offline;
 extern float angle_minus;
 ChassisMode_e mode=NOFORCE;
@@ -84,46 +84,6 @@ void UI(void const * argument)
 	shoot_mode=0x00;
 	match_mode=0x00;
 	aim_mode=(PTZ.AimTargetRequest&0x31);
-	//???UI???
-	//???л?
-	Char_Draw(&Mode,"mod",UI_Graph_ADD,0,UI_Color_Green,18,21,2,78,782,"MODE\nFIRE\nSINGLE\nAMMO");
-	Char_ReFresh(Mode);	
-	usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
-	num--;top=head[num];
-	osDelay(100);
-	//?ο???
-	Line_Draw(&imagex,"xck",UI_Graph_ADD,0,UI_Color_Green,2,6900,540,7310,540);
-	Line_Draw(&imagey,"yck",UI_Graph_ADD,0,UI_Color_Green,1,7105,900,7105,100);
-	Line_Draw(&x1,"x01",UI_Graph_ADD,0,UI_Color_Cyan,1,7050,520,7160,520);
-	Line_Draw(&x6,"x06",UI_Graph_ADD,0,UI_Color_Cyan,1,7050,420,7160,420);
-	Line_Draw(&x13,"x13",UI_Graph_ADD,0,UI_Color_Pink,6,6706,40,6910,340);
-	Line_Draw(&x14,"x14",UI_Graph_ADD,0,UI_Color_Pink,6,7504,40,7300,340);
-	Float_Draw(&CapData,"cpd",UI_Graph_ADD,0,UI_Color_Yellow,20,5,2,920,158,CMS_Data.cms_cap_v*1000);
-	UI_ReFresh(7,imagex,imagey,x1,x6,x13,x14,CapData);
-	usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
-	num--;top=head[num];
-	osDelay(100);
-	//?????	
-	Char_Draw(&noforce,"nof",UI_Graph_ADD,1,UI_Color_White,16,7,2,225,786,"noforce");
-	Char_ReFresh(noforce);
-	usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
-	num--;top=head[num];	
-	osDelay(100);
-	Char_Draw(&open2,"opp",UI_Graph_ADD,1,UI_Color_White,16,4,2,225,760,"manu");
-	Char_ReFresh(open2);
-	usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
-	num--;top=head[num];	
-	osDelay(100);
-	Char_Draw(&open3,"oop",UI_Graph_ADD,1,UI_Color_White,16,7,2,225,731,"close ");
-	Char_ReFresh(open3);
-	usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
-	num--;top=head[num];	
-	osDelay(100);
-	Char_Draw(&rune,"run",UI_Graph_ADD,1,UI_Color_White,16,7,2,225,702,"NORMAL");
-	Char_ReFresh(rune);
-	usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
-	num--;top=head[num];	
-	osDelay(100);
 	while(1)
     {
 		if(Chassis.Mode==FALLOW&&mode==NOFORCE){
@@ -144,11 +104,13 @@ void UI(void const * argument)
 			Line_Draw(&x1,"x01",UI_Graph_ADD,0,UI_Color_Cyan,1,7050,520,7160,520);
 			Line_Draw(&x6,"x06",UI_Graph_ADD,0,UI_Color_Cyan,1,7050,420,7160,420);
 			Line_Draw(&x13,"x13",UI_Graph_ADD,0,UI_Color_Pink,6,6706,40,6910,340);
-			UI_ReFresh(5,imagex,imagey,x1,x6,x13);	
+			Int_Draw(&HP_real_num,"hrn",UI_Graph_ADD,0,UI_Color_Pink,20,2,1216,890,0);
+			Line_Draw(&x14,"x14",UI_Graph_ADD,0,UI_Color_Pink,6,7504,40,7300,340);
+			UI_ReFresh(7,imagex,imagey,x1,x6,x13,HP_real_num,x14);	
 			usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
 			num--;top=head[num];
 			osDelay(100);
-			Line_Draw(&x14,"x14",UI_Graph_ADD,0,UI_Color_Pink,6,7504,40,7300,340);
+			Line_Draw(&x14,"x14",UI_Graph_Change,0,UI_Color_Pink,6,7504,40,7300,340);
 			Float_Draw(&CapData,"cpd",UI_Graph_ADD,0,UI_Color_White,20,5,2,920,158,CMS_Data.cms_cap_v*1000);
 			Line_Draw(&Posture_line,"pol",UI_Graph_ADD,0,UI_Color_Pink,25,(uint32_t)(200-30*sin(angle_minus)),(uint32_t)(230-30*cos(angle_minus)),(uint32_t)(200+30*sin(angle_minus)),(uint32_t)(230+30*cos(angle_minus)));
 			if(Offline.Motor[4] || Offline.Motor[5] || Offline.Motor[6] || Offline.Motor[7])
@@ -159,8 +121,8 @@ void UI(void const * argument)
 				Circle_Draw(&Motor_offline,"mto",UI_Graph_ADD,0,UI_Color_Green,10,950,258,5);
 			}
 			Float_Draw(&battery_voltage,"btv",UI_Graph_ADD,0,UI_Color_White,230,5,2,920,208,power_heat_data_t.chassis_voltage);
-			Rectangle_Draw(&HP_total,"hpt",UI_Graph_ADD,0,UI_Color_Yellow,4,696,833,1199,863);
-			Line_Draw(&HP_real,"hpr",UI_Graph_ADD,0,UI_Color_Green,28,700,836,700,836);
+			Rectangle_Draw(&HP_total,"hpt",UI_Graph_ADD,0,UI_Color_Yellow,4,698,853,1199,883);
+			Line_Draw(&HP_real,"hpr",UI_Graph_ADD,0,UI_Color_Green,28,700,867,700,867);
 			UI_ReFresh(7,x14,CapData,Posture_line,Motor_offline,battery_voltage,HP_total,HP_real);	
 			usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
 			num--;top=head[num];
@@ -215,11 +177,11 @@ void UI(void const * argument)
 			aim_mode=(PTZ.AimTargetRequest&0x31);
 			match_mode=0x00;
 		}
-		if(PTZ.PTZStatusInformation&0x40){
-			Rectangle_Draw(&HP_total,"hpt",UI_Graph_Change,0,UI_Color_Black,4,696,833,1199,863);
+		if(PTZ.PTZStatusInformation&0x80){
+			Rectangle_Draw(&HP_total,"hpt",UI_Graph_Change,0,UI_Color_Yellow,4,709,863,1210,893);
 		}
 		else{
-			Rectangle_Draw(&HP_total,"hpt",UI_Graph_Change,0,UI_Color_Yellow,4,696,833,1199,863);
+			Rectangle_Draw(&HP_total,"hpt",UI_Graph_Change,0,UI_Color_Black,4,709,863,1210,893);
 		}
 		//敌方机器人血量
 		if(enemy[0] & 0x01){
@@ -271,12 +233,15 @@ void UI(void const * argument)
 			else
 				HP_Now = 0;
 			if(enemy[0] & 0x02)
-				Line_Draw(&HP_real,"hpr",UI_Graph_Change,0,UI_Color_White,28,629,836,629+HP_Now,836);
+				Line_Draw(&HP_real,"hpr",UI_Graph_Change,0,UI_Color_Pink,28,711,877,711+HP_Now,877);
 			else
-				Line_Draw(&HP_real,"hpr",UI_Graph_Change,0,UI_Color_Main,28,629,836,629+HP_Now,836);
+				Line_Draw(&HP_real,"hpr",UI_Graph_Change,0,UI_Color_Green,28,711,877,711+HP_Now,877);
 		}
-		else
-			Line_Draw(&HP_real,"hpr",UI_Graph_Change,0,UI_Color_White,28,629,836,629,836);
+		else{
+			HP_Now = 0;
+			Line_Draw(&HP_real,"hpr",UI_Graph_Change,0,UI_Color_White,28,711,877,711,877);
+		}
+		Int_Draw(&HP_real_num,"hrn",UI_Graph_Change,0,UI_Color_Pink,20,2,1216,890,HP_Now);
 		/*电容电压*/
 		if(CMS_Data.Mode==NORMAL)
 			Float_Draw(&CapData,"cpd",UI_Graph_Change,0,UI_Color_White,30,5,2,920,158,CMS_Data.cms_cap_v*1000);
@@ -310,10 +275,9 @@ void UI(void const * argument)
 			}
 			Line_Draw(&Posture_line,"pol",UI_Graph_Change,0,UI_Color_Yellow,25,(uint32_t)(961),(uint32_t)(228),(uint32_t)(961),(uint32_t)(288));
 		}
-		Line_Draw(&x14,"x14",UI_Graph_Change,0,UI_Color_Pink,6,7504,40,7300,340);
 		if(count2==0)
 		{			
-			UI_ReFresh(7,CapData,battery_voltage,Motor_offline,Posture_line,HP_real,HP_total,x14);
+			UI_ReFresh(7,CapData,battery_voltage,Motor_offline,Posture_line,HP_real,HP_total,HP_real_num);
 		}
 		mode_change_flag=0x00;
 		//模式切换

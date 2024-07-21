@@ -249,7 +249,7 @@ void TimerTaskLoop1000Hz()
 	
 	//DMA_printf("%f,%d\r\n",power_heat_data_t.chassis_power,power_heat_data_t.chassis_power_buffer);
 	//DMA_printf("%f,%f\r\n",wz_filter.out,Chassis.wz);
-		
+		//DMA_printf("%f,%f\r\n",Chassis.vx,Chassis.vy);
 	//t0++;
 	
 	

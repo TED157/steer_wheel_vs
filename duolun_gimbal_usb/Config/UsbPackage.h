@@ -123,8 +123,8 @@ typedef __PACKED_STRUCT
     fp32 TargetPitchSpeed;
     fp32 TargetYawSpeed;
 	//目标相机系下2d位置
-	fp32 TargetX;
-	fp32 TargetY;
+	int16_t TargetX;
+	int16_t TargetY;
 	//时间戳
     uint32_t SystemTimer;
     // 包尾

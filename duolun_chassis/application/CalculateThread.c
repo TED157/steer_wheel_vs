@@ -28,7 +28,7 @@ uint32_t F_Motor[8];
 float WheelAngle[4];
 fp32 wz;
 #ifdef BLACK_STEERWHEEL
-fp32 Angle_zero_6020[4] = {49.5983429, 124.885834, 100.053711, 123.523376};
+fp32 Angle_zero_6020[4] = {54.4768677, 126.819672, 103.393951, 126.995483};
 #endif
 #ifdef YELLOW_STEERWHEEL
 fp32 Angle_zero_6020[4] = {75.8808594, -54.7405701, 100.625061, 158.815765};
@@ -51,8 +51,6 @@ uint8_t power_flag=0;
 float power_scale;
 fp32 v_gain=0,cap_gain=1;
 
-uint8_t Mode_last;
-uint8_t Mode_now;
 uint8_t stop_flag=0;
 int16_t stop_countdown=0;
 uint16_t speed_up_time=0;
@@ -91,10 +89,10 @@ fp32 left_front_6020_speed_PID[3] = {SPEED_6020_KP, SPEED_6020_KI, SPEED_6020_KD
 fp32 right_front_6020_speed_PID[3] = {SPEED_6020_KP, SPEED_6020_KI, SPEED_6020_KD};
 fp32 right_back_6020_speed_PID[3] = {SPEED_6020_KP, SPEED_6020_KI, SPEED_6020_KD};
 fp32 left_back_6020_speed_PID[3] = {SPEED_6020_KP, SPEED_6020_KI, SPEED_6020_KD};
-fp32 left_front_6020_position_PID[3] = {POSITION_6020_KP, POSITION_6020_KI, POSITION_6020_KD*0};
-fp32 right_front_6020_position_PID[3] = {POSITION_6020_KP, POSITION_6020_KI, POSITION_6020_KD*0};
-fp32 right_back_6020_position_PID[3] = {POSITION_6020_KP, POSITION_6020_KI, POSITION_6020_KD};
-fp32 left_back_6020_position_PID[3] = {POSITION_6020_KP, POSITION_6020_KI, POSITION_6020_KD};
+fp32 left_front_6020_position_PID[3] = {POSITION_6020_KP_1, POSITION_6020_KI_1, POSITION_6020_KD_1};
+fp32 right_front_6020_position_PID[3] = {POSITION_6020_KP_2, POSITION_6020_KI_2, POSITION_6020_KD_2};
+fp32 right_back_6020_position_PID[3] = {POSITION_6020_KP_1, POSITION_6020_KI_1, POSITION_6020_KD_1};
+fp32 left_back_6020_position_PID[3] = {POSITION_6020_KP_2, POSITION_6020_KI_2, POSITION_6020_KD_2};
 fp32 left_front_3508_PID[3] = {speed_3508_KP, speed_3508_KI, speed_3508_KD};
 fp32 right_front_3508_PID[3] = {speed_3508_KP, speed_3508_KI, speed_3508_KD};
 fp32 right_back_3508_PID[3] = {speed_3508_KP, speed_3508_KI, speed_3508_KD};
@@ -124,6 +122,7 @@ void Angle_Speed_calc();
 void CMS__();
 uint8_t chassis_powerloop(Chassis_t *Chassis);
 void Chassis_motor3508_speed_adjust(Chassis_t *Chassis,fp32 *kp);
+void Fast_Turning_Control(Chassis_t* Chassis);
 
 float vx_last=0,vy_last=0;
 float speed_adjust_test=0;
@@ -148,10 +147,10 @@ void CalculateThread(void const *pvParameters)
 						Chassis.Current[1],
 						Chassis.Current[2],
 						Chassis.Current[3],
-						Chassis.Current[4],
-						Chassis.Current[5],
-						Chassis.Current[6]/*speed_adjust_test*/,
-						Chassis.Current[7]/*speed_adjust_test*/);
+						Chassis.Current[4]*0,
+						Chassis.Current[5]*0,
+						Chassis.Current[6]*0/*speed_adjust_test*/,
+						Chassis.Current[7]*0/*speed_adjust_test*/);
 	
 		osDelay(1);
 	}
@@ -188,6 +187,9 @@ void ChassisInit()
 	first_order_filter_init(&wheel_angle_4,0.001,0.1);
 
 	CMS_Data.charge_flag=1;
+	Chassis.vx_last[0] = 0;
+	Chassis.vy_last[0] = 0;
+	Chassis.fast_turning_flag = 0;
 };
 
 void ChassisInfUpdate()
@@ -244,8 +246,8 @@ void ChassisCommandUpdate()
 	
 		
 		//Chassis.wz = -Remote.rc.ch[2] / 660.0f * (1.0f + Chassis.Power_Proportion / Power_Max);
-
-	if (Chassis.Mode == NOFORCE || Offline.PTZnode ==1)
+	
+	if (Chassis.Mode == NOFORCE || Offline.PTZnode ==1 || Offline.Motor[4] || Offline.Motor[5] || Offline.Motor[6] || Offline.Motor[7])
 	{
 		Chassis.Current[0] = 0;
 		Chassis.Current[1] = 0;
@@ -269,7 +271,7 @@ void ChassisCommandUpdate()
 			Chassis.vx = ((PTZ.FBSpeed / 32767.0f) * cos(angle_minus/180.0*PI) - (PTZ.LRSpeed / 32767.0f) * sin(angle_minus/180.0*PI)) * (v_gain );
 			Chassis.vy =  ((PTZ.FBSpeed / 32767.0f) * sin(angle_minus/180.0*PI) + (PTZ.LRSpeed / 32767.0f) * cos(angle_minus/180.0*PI)) * (v_gain );
 			Chassis.wz = -PID_calc(&follow,YawMotorMeasure.angle,follow_angle); //* (1.0f + Chassis.Power_Proportion /Power_Max );
-			if(Fabs(Chassis.wz)<0.5*v_gain&&Fabs(angle_minus)<0.5){
+			if(Fabs(Chassis.wz)<0.5*v_gain&&Fabs(angle_minus)<0.2){
 				Chassis.wz=0.001*Chassis.wz/Fabs(Chassis.wz);
 			}
 //			if(Fabs(Chassis.wz)<0.1) Chassis.wz=0;
@@ -306,7 +308,9 @@ void ChassisCommandUpdate()
 	}
 			/********************************	6020�ǶȽ���         ***********************/ // ����   i++  &&
 
-		
+		if(Chassis.Mode == FALLOW){
+			Fast_Turning_Control(&Chassis);
+		}
 		if (Fabs(PTZ.FBSpeed / 32767.0) > 0.05 || Fabs(PTZ.LRSpeed / 32767.0) > 0.05 )
 		{
 			
@@ -389,8 +393,8 @@ void ChassisCommandUpdate()
 		else if(((CMS_Data.cms_status) & (uint16_t) 1) != 1 && CMS_Data.Mode == HIGH_SPEED &&Power_Max<=120)
 		{
 			speed_up_time=0;
-			Chassis.vx = Chassis.vx * 1.1;
-			Chassis.vy = Chassis.vy * 1.1;
+			Chassis.vx = Chassis.vx * 1.4;
+			Chassis.vy = Chassis.vy * 1.4;
 			Chassis.wz = 1.0 * Chassis.wz ;
 		}
 		else{
@@ -423,6 +427,8 @@ void ChassisCommandUpdate()
 
 		Angle_Speed_calc(); // �Ƕ��Ż�
 
+		//Fast_Turning_Control(&Chassis);
+
 		Chassis.speed_6020[0] = PID_calc(&left_front_6020_position_pid, LEFT_FRONT_6020_Measure.angle, Chassis.WheelAngle[0]);
 		Chassis.speed_6020[1] = PID_calc(&right_front_6020_position_pid, RIGHT_FRONT_6020_Measure.angle, Chassis.WheelAngle[1]);
 		Chassis.speed_6020[2] = PID_calc(&right_back_6020_position_pid, RIGHT_BACK_6020_Measure.angle, Chassis.WheelAngle[2]);
@@ -432,10 +438,6 @@ void ChassisCommandUpdate()
 
 		
 	ChassisCurrentUpdate();
-
-	
-	Mode_last = Mode_now;
-	Mode_now = Chassis.Mode;
 
 }
 
@@ -590,7 +592,7 @@ void CMS__()
 	}
 	if(power_heat_data_t.buffer_energy > 70)
 	{
-		CMS_Data.Mode =FLY;
+		CMS_Data.Mode = HIGH_SPEED;
 	}
 	cms_offline_counter ++;
 }
@@ -775,5 +777,83 @@ void Chassis_motor3508_speed_adjust(Chassis_t *Chassis,fp32 *kp)
 //		else{
 //			kp[i]=1;
 //		}
+	}
+}
+
+//void Fast_Turning_Control(Chassis_t* chassis)
+//{
+//	for(uint8_t i = 0;i<4;i++){
+//		if(chassis->Motor3508[i].speed>1000){
+//			if((chassis->WheelAngle[i]-chassis->Motor6020[i].angle) > (90000/chassis->Motor3508[i].speed)+45)
+//				chassis->WheelAngle[i] = chassis->Motor6020[i].angle + (90000/chassis->Motor3508[i].speed+45);
+//			else if((chassis->WheelAngle[i]-chassis->Motor6020[i].angle) < -(90000/chassis->Motor3508[i].speed)+45)
+//				chassis->WheelAngle[i] = chassis->Motor6020[i].angle - (90000/chassis->Motor3508[i].speed+45);
+//		}
+//	}
+//}
+
+uint16_t vx_stable_num=0,vy_stable_num=0;
+float k_turn=0;
+void Fast_Turning_Control(Chassis_t* Chassis)
+{
+	if((Chassis->vx != 0 || Chassis->vy != 0) && (Fabs(atan2(Chassis->vx,Chassis->vy)-atan2(Chassis->vx_last[0],Chassis->vy_last[0]))-PI/2) < 0.1 && (Fabs(atan2(Chassis->vx,Chassis->vy)-atan2(Chassis->vx_last[0],Chassis->vy_last[0]))-PI/2) > -0.1)
+	{
+		if(!Chassis->fast_turning_flag){
+			if(Chassis->Motor3508[0].speed > 5000){
+				Chassis->fast_turning_counter=1000;
+				k_turn = 0.001;
+			}
+			else{
+				Chassis->fast_turning_counter=500;
+				k_turn = 0.002;
+			}
+		}
+		Chassis->fast_turning_flag = 1;
+	}
+	else
+	{
+		Chassis->fast_turning_flag = 0;
+		Chassis->fast_turning_counter = 0;
+	}
+	if(Chassis->fast_turning_flag == 1 && Chassis->fast_turning_counter != 0)
+	{
+		Chassis->vx = ((Chassis->vx_last[0] - Chassis->vx) * Chassis->fast_turning_counter * k_turn * Chassis->fast_turning_counter * k_turn + Chassis->vx)* 0.01f;
+		Chassis->vy = ((Chassis->vy_last[0] - Chassis->vy) * Chassis->fast_turning_counter * k_turn * Chassis->fast_turning_counter * k_turn + Chassis->vy)* 0.01f;
+		Chassis->fast_turning_counter--;
+	}
+	else if(Chassis->fast_turning_flag == 1 && Chassis->fast_turning_counter == 0)
+	{
+		Chassis->fast_turning_flag = 0;
+		Chassis->vx_last[1] = Chassis->vx;
+		Chassis->vy_last[1] = Chassis->vy;
+		Chassis->vx_last[0] = Chassis->vx_last[1];
+		Chassis->vy_last[0] = Chassis->vy_last[1];
+	}
+	if(!Chassis->fast_turning_flag)
+	{
+		DMA_printf("%f,%d\r\n",Chassis->vx_last[0],Chassis->fast_turning_flag);
+		if(Fabs(Chassis->vx_last[1] - Chassis->vx) < 0.1)
+			vx_stable_num++;
+		else
+			vx_stable_num = 0;
+		if(Fabs(Chassis->vy_last[1] - Chassis->vy) < 0.1)
+			vy_stable_num++;
+		else
+			vy_stable_num = 0;
+		Chassis->vx_last[1] = Chassis->vx;
+		Chassis->vy_last[1] = Chassis->vy;
+		if(Chassis->vx == 0 && Chassis->vy == 0)
+		{
+			Chassis->vx_last[1] = 0.01;
+			Chassis->vy_last[1] = 0.01;
+		}
+		if(vx_stable_num == 200){
+			Chassis->vx_last[0] = Chassis->vx_last[1];
+			vx_stable_num = 0;
+		}
+		if(vy_stable_num == 200){
+			Chassis->vy_last[0] = Chassis->vy_last[1];
+			vy_stable_num = 0;
+		}
 	}
 }

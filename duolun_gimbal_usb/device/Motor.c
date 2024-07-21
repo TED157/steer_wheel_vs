@@ -31,14 +31,15 @@
 #define DaMiao_Motor_ZERO_SET_Message(message)            for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfe;
 
 #ifdef BLACK_STEERWHEEL
-#define DAMIAO_MAX_ANGLE 1.68
-#define DAMIAO_MIN_ANGLE 0.83
+#define DAMIAO_MAX_ANGLE 2.35
+#define DAMIAO_MIN_ANGLE 1.61
+float tor=-0.8;
 #endif
 #ifdef YELLOW_STEERWHEEL
-#define DAMIAO_MAX_ANGLE 0.33
-#define DAMIAO_MIN_ANGLE -0.50
+#define DAMIAO_MAX_ANGLE 0.04
+#define DAMIAO_MIN_ANGLE -0.80
+float tor=-0.5;
 #endif
-float tor=-0.8;
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
 extern OfflineMonitor_t OfflineMonitor;
@@ -130,7 +131,7 @@ void DaMiaoCanSend(float DaMiao)
 		DaMiao = 0;
 	else if(DamiaoPitchMotorMeasure.para.pos <= DAMIAO_MIN_ANGLE && DaMiao < 0)
 		DaMiao = tor;
-	DaMiao_Motor_Stall_Monitor(&DamiaoPitchMotorMeasure);
+	//DaMiao_Motor_Stall_Monitor(&DamiaoPitchMotorMeasure);
 	if(DamiaoPitchMotorMeasure.stall_flag==1) DaMiao/=((DaMiao>0?DaMiao:-DaMiao)*2);
     DaMiao_mit_ctrl(damiao_data,DaMiao);
     HAL_CAN_AddTxMessage(&hcan2, &can_tx_message, damiao_data, &send_mail_box);

@@ -43,6 +43,7 @@ typedef struct{
     int16_t     given_current;
     uint8_t     temperate;
     int16_t     last_ecd;
+	
 } motor_measure_t;
 
 // 电机回传信息结构体

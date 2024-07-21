@@ -24,12 +24,15 @@ typedef struct
 	float vy;
 	float wz;
 	
+	float vx_last[2]; //[0]是稳定时的v_last,[1]是实时的v_last
+	float vy_last[2];
+	uint8_t fast_turning_flag;
+	uint16_t fast_turning_counter;
+
 	float Current[8];
 	float WheelSpeed[4];
 	float WheelAngle[4];
 	float speed_6020[4];
-	float Power_pre;
-	float Power_Proportion;
 	uint8_t CapKey;
 	
 }Chassis_t;

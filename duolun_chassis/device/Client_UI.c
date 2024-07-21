@@ -297,7 +297,34 @@ void Float_Draw(Float_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_
    image->graph_Float = Graph_Float;
 }
 
-
+/************************************************绘制整型数据*************************************************
+**参数：*image Graph_Data类型变量指针，用于存放图形数据
+        imagename[3]   图片名称，用于标识更改
+        Graph_Operate   图片操作，见头文件
+        Graph_Layer    图层0-9
+        Graph_Color    图形颜色
+        Graph_Width    图形线宽
+        Graph_Size     字号
+        Start_x、Start_x    开始坐标
+        Graph_Int   要显示的变量
+**********************************************************************************************************/
+        
+void Int_Draw(Float_Data *image,char imagename[3],u32 Graph_Operate,u32 Graph_Layer,u32 Graph_Color,u32 Graph_Size,u32 Graph_Width,u32 Start_x,u32 Start_y,int32_t Graph_Int)
+{
+   int i;
+   
+   for(i=0;i<3&&imagename[i]!='\0';i++)
+   image->graphic_name[2-i]=imagename[i];
+   image->graphic_tpye = UI_Graph_Int;
+   image->operate_tpye = Graph_Operate;
+   image->layer = Graph_Layer;
+   image->color = Graph_Color;
+   image->width = Graph_Width;
+   image->start_x = Start_x;
+   image->start_y = Start_y;
+   image->start_angle = Graph_Size;
+   image->graph_Float = Graph_Int;
+}
 
 /************************************************绘制字符型数据*************************************************
 **参数：*image Graph_Data类型变量指针，用于存放图形数据
