@@ -485,7 +485,7 @@ void TimerTaskLoop100Hz(void)
 //	}
 	if(prescaler==20){
 		prescaler=0;
-		CanSendMessage(&hcan1,ENEMY_ID,2,(uint8_t *)(&Aimbot.AimbotState));
+		CanSendMessage(&hcan1,ENEMY_ID,6,(uint8_t *)(&Aimbot_Message.AimbotState));
     }
 	prescaler++;
 	//GimbalImuPacketSend();

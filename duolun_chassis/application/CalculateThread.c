@@ -23,6 +23,7 @@ EulerSystemMeasure_t Imu;
 Aim_t Aim;
 PTZ_t PTZ;
 ext_game_robot_status_t Referee;
+Aimbot_Message_t Aimbot_Message;
 extern ext_power_heat_data_t power_heat_data_t;
 uint32_t F_Motor[8];
 float WheelAngle[4];
@@ -147,10 +148,10 @@ void CalculateThread(void const *pvParameters)
 						Chassis.Current[1],
 						Chassis.Current[2],
 						Chassis.Current[3],
-						Chassis.Current[4]*0,
-						Chassis.Current[5]*0,
-						Chassis.Current[6]*0/*speed_adjust_test*/,
-						Chassis.Current[7]*0/*speed_adjust_test*/);
+						Chassis.Current[4],
+						Chassis.Current[5],
+						Chassis.Current[6]/*speed_adjust_test*/,
+						Chassis.Current[7]/*speed_adjust_test*/);
 	
 		osDelay(1);
 	}

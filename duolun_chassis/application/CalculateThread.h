@@ -37,8 +37,16 @@ typedef struct
 	
 }Chassis_t;
 
+typedef struct{
+	uint8_t AimbotState;
+	uint8_t AimbotTarget;
+	int16_t TargetX;
+	int16_t TargetY;
+}Aimbot_Message_t;
+
 extern Chassis_t Chassis;
 extern uint8_t left_flag,right_flag;
+extern Aimbot_Message_t        Aimbot_Message;
 
 void CalculateThread(void const * pvParameters);
 void ChassisCurrentUpdate();

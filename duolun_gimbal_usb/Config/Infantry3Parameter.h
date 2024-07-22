@@ -22,6 +22,7 @@
 #define PITCH_MAX_ISPEED                        6
 #define YAW_MAX_SPEED                           1000
 #define YAW_MAX_ISPEED                          8
+#define ROTOR_MAX_SPEED                         2009
 
 #define AMMO_SPEEDSET_10MS                      2000
 #define AMMO_SPEEDSET_12MS                      5000

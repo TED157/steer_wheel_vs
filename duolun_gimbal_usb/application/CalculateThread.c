@@ -36,7 +36,8 @@ AimbotFrame_SCM_t         Aimbot;//��������
 OfflineMonitor_t        Offline;//���߼��ṹ��
 RefereeInformation_t    Referee;//����ϵͳ����
 GimbalRequestState_t RequestStatePacket;//��̨����can��
-
+Aimbot_Message_t Aimbot_Message;
+																				
 first_order_filter_type_t  pitch_aimbot_filter;
 
 fp32 pitch_aimbot_filter_param = 0.10f;
@@ -404,15 +405,15 @@ void GimbalFireModeUpdate(void)
 							//rune_shoot_flag=0;
 							Gimbal.FireMode=GM_FIRE_BUSY;									
 								gimbal_fire_countdown=ROTOR_TIMESET_BUSY;
-								if(Gimbal.ControlMode==GM_AIMBOT_RUNES)
-									gimbal_fire_countdown=59;
+								if(single_shoot_flag)
+									gimbal_fire_countdown=135;
 								count++;
 						}
         }
 				if(Gimbal.FireMode==GM_FIRE_BUSY&&gimbal_fire_countdown<=0)
 				{
 						if(single_shoot_flag==1||Offline.RefereeAmmoLimitNode0==1)
-								gimbal_fire_countdown=1000;//450;//time interval
+								gimbal_fire_countdown=450;//450;//time interval
 						else 
 								gimbal_fire_countdown=(int)(10000.0/(dealta_heat/1.4+Referee.Ammo0Limit.Cooling/1.8+5)-45);
 						Gimbal.FireMode=GM_FIRE_COOLING; //no shoot
@@ -579,8 +580,6 @@ void RotorPIDUpdate(void)
         PID_init(&Gimbal.Pid.Rotor, PID_POSITION, ROTOR_STOP, M2006_MAX_OUTPUT, M2006_MAX_IOUTPUT);
     }
     else if (FMthis == GM_FIRE_BUSY){
-		if(single_shoot_flag
-			cascade_PID_init(&Gimbal.Pid.Rotor, PID_POSITION
         PID_init(&Gimbal.Pid.Rotor, PID_POSITION, ROTOR_FORWARD, M2006_MAX_OUTPUT, M2006_MAX_IOUTPUT);
     }
     else if (FMthis == GM_FIRE_LAGGING){
@@ -707,8 +706,8 @@ void RotorCommandUpdate(void)
 {
     if (Gimbal.FireMode == GM_FIRE_BUSY){  
 		Gimbal.Command.Rotor = ROTOR_SPEEDSET_FORWARD * ROTOR_MOTOR_DIRECTION;
-		if(Gimbal.ControlMode==GM_AIMBOT_RUNES)
-			Gimbal.Command.Rotor = ROTOR_SPEEDSET_FORWARD_RUNE  * ROTOR_MOTOR_DIRECTION;
+		if(single_shoot_flag)
+			Gimbal.Command.Rotor = ROTOR_MAX_SPEED  * ROTOR_MOTOR_DIRECTION;
     }
     else if (Gimbal.FireMode == GM_FIRE_LAGGING){
         Gimbal.Command.Rotor = ROTOR_SPEEDSET_BACKWARD * ROTOR_MOTOR_DIRECTION;
@@ -940,7 +939,10 @@ void GetGimbalRequestState(GimbalRequestState_t *RequestState)
 		
 	GimabalImu.robot_id=Referee.RobotState.RobotID;
         
-    
+    Aimbot_Message.AimbotState = Aimbot.AimbotState;
+	Aimbot_Message.AimbotTarget = Aimbot.AimbotTarget;
+	Aimbot_Message.TargetX = Aimbot.TargetX;
+	Aimbot_Message.TargetY = Aimbot.TargetY;
     
     RequestState->Reserve = 0x00;
     

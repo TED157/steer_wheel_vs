@@ -32,10 +32,10 @@ typedef struct{
 } GimbalPID_t;
 
 typedef enum{
-    GM_NO_FORCE         =   0x00,//ÎŞÁ¦
-    GM_INIT                     ,//³õÊ¼»¯
-    GM_TEST                     ,//Ä¦²ÁÂÖ²»×ª
-    GM_MATCH                    ,//Ä¦²ÁÂÖ×ª
+    GM_NO_FORCE         =   0x00,//ï¿½ï¿½ï¿½ï¿½
+    GM_INIT                     ,//ï¿½ï¿½Ê¼ï¿½ï¿½
+    GM_TEST                     ,//Ä¦ï¿½ï¿½ï¿½Ö²ï¿½×ª
+    GM_MATCH                    ,//Ä¦ï¿½ï¿½ï¿½ï¿½×ª
 } GimbalStateMachine_e;
 
 typedef enum{
@@ -76,15 +76,15 @@ typedef struct{
 } ImuBuffer_t;
 
 typedef struct{
-    EulerSystemMeasure_t    Imu;                    //  imuµÄÊı¾İ·´À¡
-    MotorMeasure_t          MotorMeasure;           //  µç»ú±àÂëÆ÷µÄÊı¾İ·´À¡
-    GimbalCommand_t         Command;                //  ÔÆÌ¨½Ç¶È¿ØÖÆÖ¸Áî
-    GimbalPID_t             Pid;                    //  ÔÆÌ¨PID½á¹¹Ìå
-    GimbalOutput_t          Output;                 //  ÔÆÌ¨µç»úÊä³ö
-    GimbalStateMachine_e    StateMachine;           //  ÔÆÌ¨×´Ì¬»ú
-    GimbalControlMode_e     ControlMode;            //  ÔÆÌ¨¿ØÖÆÄ£Ê½
-    GimbalFireMode_e        FireMode;               //  ÔÆÌ¨¿ª»ğÄ£Ê½
-    RefereeMeasure_t        Referee;                //  ²ÃÅĞÏµÍ³Êı¾İ
+    EulerSystemMeasure_t    Imu;                    //  imuçš„æ•°æ®åé¦ˆ
+    MotorMeasure_t          MotorMeasure;           //  ç”µæœºç¼–ç å™¨çš„æ•°æ®åé¦ˆ
+    GimbalCommand_t         Command;                //  äº‘å°è§’åº¦æ§åˆ¶æŒ‡ä»¤
+    GimbalPID_t             Pid;                    //  äº‘å°PIDç»“æ„ä½“
+    GimbalOutput_t          Output;                 //  äº‘å°ç”µæœºè¾“å‡º
+    GimbalStateMachine_e    StateMachine;           //  äº‘å°çŠ¶æ€æœº
+    GimbalControlMode_e     ControlMode;            //  äº‘å°æ§åˆ¶æ¨¡å¼
+    GimbalFireMode_e        FireMode;               //  äº‘å°å¼€ç«æ¨¡å¼
+    RefereeMeasure_t        Referee;                //  è£åˆ¤ç³»ç»Ÿæ•°æ®
     ImuBuffer_t             ImuBuffer;
 } Gimbal_t;
 
@@ -110,10 +110,16 @@ typedef struct{
     fp32                    ChassisCommandY;
 } Chassis_t;
 
+typedef struct{
+	uint8_t AimbotState;
+	uint8_t AimbotTarget;
+	int16_t TargetX;
+	int16_t TargetY;
+}Aimbot_Message_t;
 
-extern Gimbal_t                Gimbal;//ÔÆÌ¨×´Ì¬½á¹¹
-extern AimbotFrame_SCM_t       Aimbot;//×ÔÃéÊı¾İ
-
+extern Gimbal_t                Gimbal;//ï¿½ï¿½Ì¨×´Ì¬ï¿½á¹¹
+extern AimbotFrame_SCM_t       Aimbot;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+extern Aimbot_Message_t        Aimbot_Message;
 
 
 

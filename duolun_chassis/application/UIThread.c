@@ -54,7 +54,7 @@
 //int s_time_rune;
 //int b_time_rune;
 
-Graph_Data imagex,imagey,x1,x6,x7,x8,x9,x10,x11,x12,x13,x14,HP_total,HP_real;
+Graph_Data imagex,imagey,x1,x6,x7,x8,x9,x10,x11,x12,x13,x14,HP_total,HP_real,Aimbot_Dot;
 Graph_Data circle1,circle2,circle3,circle4;
 Graph_Data Pingheng,Motor_offline,Posture_line;
 String_Data Ammo,aimbot,autofire,Mode,open2,open3,open4,open5,noforce;
@@ -66,7 +66,6 @@ uint8_t count=0,count2=0;
 extern float CapChageVoltage;
 extern EulerSystemMeasure_t    Imu;
 extern DMA_HandleTypeDef hdma_usart6_tx;
-extern uint8_t enemy[2];
 int32_t HP_Now=0;
 extern OfflineMonitor_t Offline;
 extern float angle_minus;
@@ -110,7 +109,7 @@ void UI(void const * argument)
 			usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
 			num--;top=head[num];
 			osDelay(100);
-			Line_Draw(&x14,"x14",UI_Graph_Change,0,UI_Color_Pink,6,7504,40,7300,340);
+			Circle_Draw(&Aimbot_Dot,"abd",UI_Graph_ADD,0,UI_Color_Pink,10,1210,593,10);
 			Float_Draw(&CapData,"cpd",UI_Graph_ADD,0,UI_Color_White,20,5,2,920,158,CMS_Data.cms_cap_v*1000);
 			Line_Draw(&Posture_line,"pol",UI_Graph_ADD,0,UI_Color_Pink,25,(uint32_t)(200-30*sin(angle_minus)),(uint32_t)(230-30*cos(angle_minus)),(uint32_t)(200+30*sin(angle_minus)),(uint32_t)(230+30*cos(angle_minus)));
 			if(Offline.Motor[4] || Offline.Motor[5] || Offline.Motor[6] || Offline.Motor[7])
@@ -120,10 +119,10 @@ void UI(void const * argument)
 			else{
 				Circle_Draw(&Motor_offline,"mto",UI_Graph_ADD,0,UI_Color_Green,10,950,258,5);
 			}
-			Float_Draw(&battery_voltage,"btv",UI_Graph_ADD,0,UI_Color_White,230,5,2,920,208,power_heat_data_t.chassis_voltage);
+			Float_Draw(&battery_voltage,"btv",UI_Graph_ADD,0,UI_Color_White,30,5,2,920,208,power_heat_data_t.chassis_voltage);
 			Rectangle_Draw(&HP_total,"hpt",UI_Graph_ADD,0,UI_Color_Yellow,4,698,853,1199,883);
 			Line_Draw(&HP_real,"hpr",UI_Graph_ADD,0,UI_Color_Green,28,700,867,700,867);
-			UI_ReFresh(7,x14,CapData,Posture_line,Motor_offline,battery_voltage,HP_total,HP_real);	
+			UI_ReFresh(7,CapData,Posture_line,Motor_offline,battery_voltage,HP_total,HP_real,Aimbot_Dot);	
 			usart6_tx_dma_enable(UIsend_buffer+head[num-1],head[num]-head[num-1]);
 			num--;top=head[num];
 			osDelay(100);
@@ -184,24 +183,24 @@ void UI(void const * argument)
 			Rectangle_Draw(&HP_total,"hpt",UI_Graph_Change,0,UI_Color_Black,4,709,863,1210,893);
 		}
 		//敌方机器人血量
-		if(enemy[0] & 0x01){
+		if(Aimbot_Message.AimbotState & 0x01){
 			if(robot_state.robot_id<10){
-				if(enemy[1] & 0x01){
+				if(Aimbot_Message.AimbotTarget & 0x01){
 					HP_Now = game_robot_HP_t.blue_1_robot_HP;
 				}
-				else if(enemy[1] & 0x02){
+				else if(Aimbot_Message.AimbotTarget & 0x02){
 					HP_Now = game_robot_HP_t.blue_2_robot_HP;
 				}
-				else if(enemy[1] & 0x04){
+				else if(Aimbot_Message.AimbotTarget & 0x04){
 					HP_Now = game_robot_HP_t.blue_3_robot_HP;
 				}
-				else if(enemy[1] & 0x08){
+				else if(Aimbot_Message.AimbotTarget & 0x08){
 					HP_Now = game_robot_HP_t.blue_4_robot_HP;
 				}
-				else if(enemy[1] & 0x10){
+				else if(Aimbot_Message.AimbotTarget & 0x10){
 					HP_Now = game_robot_HP_t.blue_5_robot_HP;
 				}
-				else if(enemy[1] & 0x40){
+				else if(Aimbot_Message.AimbotTarget & 0x40){
 					HP_Now = game_robot_HP_t.blue_7_robot_HP;
 				}
 				else
@@ -209,22 +208,22 @@ void UI(void const * argument)
 			}
 			else if(robot_state.robot_id>10)
 			{
-				if(enemy[1] & 0x01){
+				if(Aimbot_Message.AimbotTarget & 0x01){
 					HP_Now = game_robot_HP_t.red_1_robot_HP;
 				}
-				else if(enemy[1] & 0x02){
+				else if(Aimbot_Message.AimbotTarget & 0x02){
 					HP_Now = game_robot_HP_t.red_2_robot_HP;
 				}
-				else if(enemy[1] & 0x04){
+				else if(Aimbot_Message.AimbotTarget & 0x04){
 					HP_Now = game_robot_HP_t.red_3_robot_HP;
 				}
-				else if(enemy[1] & 0x08){
+				else if(Aimbot_Message.AimbotTarget & 0x08){
 					HP_Now = game_robot_HP_t.red_4_robot_HP;
 				}
-				else if(enemy[1] & 0x10){
+				else if(Aimbot_Message.AimbotTarget & 0x10){
 					HP_Now = game_robot_HP_t.red_5_robot_HP;
 				}
-				else if(enemy[1] & 0x40){
+				else if(Aimbot_Message.AimbotTarget & 0x40){
 					HP_Now = game_robot_HP_t.red_7_robot_HP;
 				}
 				else
@@ -232,14 +231,16 @@ void UI(void const * argument)
 			}
 			else
 				HP_Now = 0;
-			if(enemy[0] & 0x02)
+			if(Aimbot_Message.AimbotState & 0x02)
 				Line_Draw(&HP_real,"hpr",UI_Graph_Change,0,UI_Color_Pink,28,711,877,711+HP_Now,877);
 			else
 				Line_Draw(&HP_real,"hpr",UI_Graph_Change,0,UI_Color_Green,28,711,877,711+HP_Now,877);
+			Circle_Draw(&Aimbot_Dot,"abd",UI_Graph_Change,0,UI_Color_Pink,10,Aimbot_Message.TargetX,Aimbot_Message.TargetY,10);
 		}
 		else{
 			HP_Now = 0;
 			Line_Draw(&HP_real,"hpr",UI_Graph_Change,0,UI_Color_White,28,711,877,711,877);
+			Circle_Draw(&Aimbot_Dot,"abd",UI_Graph_Change,0,UI_Color_Pink,10,Aimbot_Message.TargetX,Aimbot_Message.TargetY,0);
 		}
 		Int_Draw(&HP_real_num,"hrn",UI_Graph_Change,0,UI_Color_Pink,20,2,1216,890,HP_Now);
 		/*电容电压*/
@@ -277,7 +278,7 @@ void UI(void const * argument)
 		}
 		if(count2==0)
 		{			
-			UI_ReFresh(7,CapData,battery_voltage,Motor_offline,Posture_line,HP_real,HP_total,HP_real_num);
+			UI_ReFresh(7,CapData,Aimbot_Dot,Motor_offline,Posture_line,HP_real,HP_total,HP_real_num);
 		}
 		mode_change_flag=0x00;
 		//模式切换

@@ -197,15 +197,16 @@ void sbus_to_rc(uint8_t DmaBufNmb)
 }    
 
 
-
+uint32_t result1;
 void FigureTransmission_to_rc(uint8_t DmaBufNmb)
 {
 	memcpy(&ft_rc,usart6_buf[DmaBufNmb],sizeof(ft_rc));
 	uint8_t frame_head[5];
 	memcpy(frame_head,&ft_rc.frame_head,5);
+	result1=verify_CRC16_check_sum(usart6_buf[DmaBufNmb],ft_rc.frame_head.data_length+9);
 	if(ft_rc.frame_head.SOF==0xA5 && verify_CRC8_check_sum(frame_head,5))
 	{
-		if(ft_rc.cmd_id==0x304 && verify_CRC16_check_sum(usart6_buf[DmaBufNmb],21) && OfflineMonitor.Remote)
+		if(ft_rc.cmd_id==0x304 && verify_CRC16_check_sum(usart6_buf[DmaBufNmb],ft_rc.frame_head.data_length+9) && OfflineMonitor.Remote)
 		{
 			Ft_RemoteoOfflineStateNodeOffline();
 			KeyFormerChannal = rc_ctrl.key.v;

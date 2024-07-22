@@ -43,7 +43,6 @@ uint16_t right_counter = 0;
 uint16_t feet_left_counter = 0;
 uint16_t feet_right_counter = 0;
 uint16_t cms_offline_counter = 0;
-uint8_t enemy[2];
 extern uint32_t F_Motor[8];
 OfflineCounter_t OfflineCounter;
 OfflineMonitor_t OfflineMonitor;
@@ -168,8 +167,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 			}
 			case ENEMY_ID:
 			{
-				enemy[0] = rx_data[0];
-				enemy[1] = rx_data[1];
+				memcpy(&Aimbot_Message,rx_data,6);
 				break;
 			}
 			default:
