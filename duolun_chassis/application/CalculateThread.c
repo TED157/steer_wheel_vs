@@ -800,13 +800,17 @@ void Fast_Turning_Control(Chassis_t* Chassis)
 	if((Chassis->vx != 0 || Chassis->vy != 0) && (Fabs(atan2(Chassis->vx,Chassis->vy)-atan2(Chassis->vx_last[0],Chassis->vy_last[0]))-PI/2) < 0.1 && (Fabs(atan2(Chassis->vx,Chassis->vy)-atan2(Chassis->vx_last[0],Chassis->vy_last[0]))-PI/2) > -0.1)
 	{
 		if(!Chassis->fast_turning_flag){
-			if(Chassis->Motor3508[0].speed > 5000){
-				Chassis->fast_turning_counter=1000;
+			if(Power_Max>=80){
+				Chassis->fast_turning_counter=100;
 				k_turn = 0.001;
 			}
+			else if(Power_Max>=60){
+				Chassis->fast_turning_counter=40;
+				k_turn = 0.025;
+			}
 			else{
-				Chassis->fast_turning_counter=500;
-				k_turn = 0.002;
+				Chassis->fast_turning_counter=10;
+				k_turn = 0.1;
 			}
 		}
 		Chassis->fast_turning_flag = 1;
@@ -832,7 +836,7 @@ void Fast_Turning_Control(Chassis_t* Chassis)
 	}
 	if(!Chassis->fast_turning_flag)
 	{
-		DMA_printf("%f,%d\r\n",Chassis->vx_last[0],Chassis->fast_turning_flag);
+		//DMA_printf("%f,%d\r\n",Chassis->vx_last[0],Chassis->fast_turning_flag);
 		if(Fabs(Chassis->vx_last[1] - Chassis->vx) < 0.1)
 			vx_stable_num++;
 		else
@@ -848,11 +852,11 @@ void Fast_Turning_Control(Chassis_t* Chassis)
 			Chassis->vx_last[1] = 0.01;
 			Chassis->vy_last[1] = 0.01;
 		}
-		if(vx_stable_num == 200){
+		if(vx_stable_num == 150){
 			Chassis->vx_last[0] = Chassis->vx_last[1];
 			vx_stable_num = 0;
 		}
-		if(vy_stable_num == 200){
+		if(vy_stable_num == 150){
 			Chassis->vy_last[0] = Chassis->vy_last[1];
 			vy_stable_num = 0;
 		}
