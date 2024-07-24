@@ -3,14 +3,18 @@
 
 #include "struct_typedef.h"
 
-//区分pitch轴电机类型
-#define DAMIAO_PITCH
-//#define GM6020_PITCH
+
 
 #define GM6020_MAX_OUTPUT                       30000
 #define GM6020_MAX_IOUTPUT                      8000
-#define DAMIAO_MAX_OUTPUT                       3
-#define DAMIAO_MAX_IOUTPUT                      0.5
+#ifdef DAMIAO_PITCH
+#define PITCH_MAX_OUTPUT                        3
+#define PITCH_MAX_IOUTPUT                       0.5
+#endif
+#ifdef GM6020_PITCH
+#define PITCH_MAX_OUTPUT                        30000
+#define PITCH_MAX_IOUTPUT                       8000
+#endif
 #define M3508_MAX_OUTPUT                        16384
 #define M3508_MAX_IOUTPUT                       6000
 #define M2006_MAX_OUTPUT                        10000
@@ -197,7 +201,7 @@ fp32 PITCH_SPEED_AIMBOT_RUNES[3] = { PITCH_SPEED_AIMBOT_RUNES_KP, PITCH_SPEED_AI
 fp32 PITCH_ANGLE_AIMBOT_RUNES[3] = { PITCH_ANGLE_AIMBOT_RUNES_KP, PITCH_ANGLE_AIMBOT_RUNES_KI, PITCH_ANGLE_AIMBOT_RUNES_KD };
 #endif
 
-#ifdef GM6020_pitch
+#ifdef GM6020_PITCH
 //  无力云台参数
 //  YAW轴角速度环
 #define YAW_SPEED_NO_FORCE_KP                   0.0f

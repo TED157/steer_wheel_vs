@@ -25,11 +25,12 @@
 
 #include "QuaternionEKF.h"
 #define IMU_temp_PWM(pwm)  imu_pwm_set(pwm)                    //pwm¸ø¶¨
-#ifdef YELLOW_STEERWHEEL
+#if defined YELLOW_STEERWHEEL
 float bias=-0.00079999998f;//0.04375f;
-#endif
-#ifdef BLACK_STEERWHEEL
+#elif defined GREEN_STEERWHEEL
 float bias=0.002156f;//0.04375f;
+#elif defined BLACK_STEERWHEEL
+float bias=0.0;//0.04375f;
 #endif
 /**
   * @brief          control the temperature of bmi088

@@ -30,15 +30,18 @@
 #define DaMiao_Motor_Error_Clear_Message(message)         for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfb;
 #define DaMiao_Motor_ZERO_SET_Message(message)            for(uint8_t i=0;i<7;i++) message[i]=0xff; message[7]=0xfe;
 
-#ifdef BLACK_STEERWHEEL
+#if defined GREEN_STEERWHEEL
 #define DAMIAO_MAX_ANGLE 2.35
 #define DAMIAO_MIN_ANGLE 1.61
 float tor=-0.8;
-#endif
-#ifdef YELLOW_STEERWHEEL
+#elif defined YELLOW_STEERWHEEL
 #define DAMIAO_MAX_ANGLE 0.04
 #define DAMIAO_MIN_ANGLE -0.80
 float tor=-0.5;
+#elif defined BLACK_STEERWHEEL
+#define DAMIAO_MAX_ANGLE 0
+#define DAMIAO_MIN_ANGLE 0
+float tor=0;
 #endif
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;

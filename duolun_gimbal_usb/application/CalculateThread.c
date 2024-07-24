@@ -480,8 +480,8 @@ void GimbalPIDUpdate(void)
                             PITCH_SPEED_MANUAL_OPERATE, 
                             PITCH_MAX_SPEED, 
                             PITCH_MAX_ISPEED, 
-                            DAMIAO_MAX_OUTPUT, 
-                            DAMIAO_MAX_IOUTPUT
+                            PITCH_MAX_OUTPUT, 
+                            PITCH_MAX_IOUTPUT
                             );
     }
     else if (CMthis == GM_AIMBOT_OPERATE){
@@ -498,8 +498,8 @@ void GimbalPIDUpdate(void)
                             PITCH_SPEED_AIMBOT_OPERATE, 
                             PITCH_MAX_SPEED, 
                             PITCH_MAX_ISPEED, 
-                            DAMIAO_MAX_OUTPUT, 
-                            DAMIAO_MAX_IOUTPUT
+                            PITCH_MAX_OUTPUT, 
+                            PITCH_MAX_IOUTPUT
                             );
     }
     else if (CMthis == GM_AIMBOT_RUNES){
@@ -516,8 +516,8 @@ void GimbalPIDUpdate(void)
                             PITCH_SPEED_AIMBOT_RUNES, 
                             PITCH_MAX_SPEED, 
                             PITCH_MAX_ISPEED, 
-                            DAMIAO_MAX_OUTPUT, 
-                            DAMIAO_MAX_IOUTPUT
+                            PITCH_MAX_OUTPUT, 
+                            PITCH_MAX_IOUTPUT
                             );
     }
     else if (CMthis == GM_RESET_POSITION){
@@ -534,8 +534,8 @@ void GimbalPIDUpdate(void)
                             PITCH_SPEED_RESET_POSITION, 
                             PITCH_MAX_SPEED, 
                             PITCH_MAX_ISPEED, 
-                            DAMIAO_MAX_OUTPUT, 
-                            DAMIAO_MAX_IOUTPUT
+                            PITCH_MAX_OUTPUT, 
+                            PITCH_MAX_IOUTPUT
                             );
     }
     else{
@@ -552,8 +552,8 @@ void GimbalPIDUpdate(void)
                             PITCH_SPEED_NO_FORCE, 
                             PITCH_MAX_SPEED, 
                             PITCH_MAX_ISPEED, 
-                            DAMIAO_MAX_OUTPUT, 
-                            DAMIAO_MAX_IOUTPUT
+                            PITCH_MAX_OUTPUT, 
+                            PITCH_MAX_IOUTPUT
                             );
     }
     
