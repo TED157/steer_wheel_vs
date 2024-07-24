@@ -6,8 +6,8 @@
 //用于区分两辆舵轮
 
 //#define YELLOW_STEERWHEEL 
-#define GREEN_STEERWHEEL
-//#define BLACK_STEERWHEEL
+// #define GREEN_STEERWHEEL
+#define BLACK_STEERWHEEL
 
 #define LENGTH 1000
 #define gen2 1.414213562373/2.0
@@ -43,14 +43,12 @@
 #elif defined YELLOW_STEERWHEEL
 #define FollowAngle              						-76.3203506f//26.134f
 #elif defined BLACK_STEERWHEEL
-#define FollowAngle              						-76.3203506f//26.134f
+#define FollowAngle              						-15.0f//26.134f
 #endif 
 
 #define FOLLOW_KP						0.033f
 #define FOLLOW_KI						0.00000f
 #define FOLLOW_KD						2.05f
-
-
 
 #define TURN_KP							1000.0f//200.0f
 #define TURN_KI							0.0f//0.0f
