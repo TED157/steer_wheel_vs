@@ -12,8 +12,6 @@
 extern uint8_t u1_buf[32];
 extern EulerSystemMeasure_t    Imu;
 
-double t00=0,tk[4],t01=0,t02=0,ct=0,ct2=0,t03=0;
-
  uint8_t cms_send_period=0;
 
 extern TIM_HandleTypeDef htim3;
@@ -22,8 +20,6 @@ extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim6;
 
 int receive_times=0,send_times=0;
-
-uint8_t left_flag=0,right_flag=1;
 
 extern int16_t left_foot_position;
 extern int16_t right_foot_position;
@@ -239,6 +235,8 @@ extern first_order_filter_type_t current_6020_filter_type;
 extern first_order_filter_type_t current_3508_filter_type;
 extern first_order_filter_type_t wz_filter;
 
+
+
 void TimerTaskLoop1000Hz()
 {
 	
@@ -249,40 +247,27 @@ void TimerTaskLoop1000Hz()
 	//DMA_printf("%f,%f\r\n",wz_filter.out,Chassis.wz);
 		//DMA_printf("%f,%f\r\n",Chassis.vx,Chassis.vy);
 	//t0++;
-	
-	
-
-
-
 }
-
 void TimerTaskLoop500Hz_1()
 {
 	
-
-		
-
-
 }
 
 void TimerTaskLoop500Hz_2()
 {
-			
-		
-	
-	
+	 
 }
 
 void TimerTaskLoop100Hz()
 {
 	CMS_BUFFER_SEND(power_heat_data_t.buffer_energy);
 	cms_send_period=0;
-	if(Referee.power_management_chassis_output==0 /*|| power_heat_data_t.chassis_voltage<21000*/)
-	{
-		CMS_POWER_SEND(robot_state.chassis_power_limit,300,150,0);
-	}
-	else
+	if(Referee.power_management_chassis_output==1 && (PTZ.PTZStatusInformation & 0x80))
 		CMS_POWER_SEND(robot_state.chassis_power_limit,300,150,1);
+	else if(Referee.power_management_chassis_output==1 && !(PTZ.PTZStatusInformation & 0x80))
+		CMS_POWER_SEND(robot_state.chassis_power_limit,300,150,3);
+	else
+		CMS_POWER_SEND(robot_state.chassis_power_limit,300,150,0);
 	uint8_t message[2];
 	message[0]=robot_state.chassis_power_limit>>8;
 	message[0]=robot_state.chassis_power_limit;

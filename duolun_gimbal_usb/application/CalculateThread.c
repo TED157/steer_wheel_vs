@@ -62,7 +62,7 @@ void ShootSpeedAdopt(void);
 //int dafu_flag = 0;
 
 
-bool_t single_shoot_flag=1;//��������
+bool_t single_shoot_flag=0;//��������
 bool_t auto_fire_flag=1;//�Զ����𿪹�
 bool_t switch_flag=0;//����л�����
 uint8_t No_noforce_flag=1;
@@ -260,7 +260,7 @@ void GimbalStateMachineUpdate(void)
 	if(Gimbal.StateMachine == GM_MATCH)
 		HAL_GPIO_WritePin(Laser_GPIO_Port,Laser_Pin,GPIO_PIN_RESET);
 	else
-		HAL_GPIO_WritePin(Laser_GPIO_Port, Laser_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(Laser_GPIO_Port, Laser_Pin, GPIO_PIN_SET);
 }
 
 void ChassisStateMachineUpdate(void)

@@ -6,7 +6,8 @@
 //用于区分两辆舵轮
 
 //#define YELLOW_STEERWHEEL 
-#define BLACK_STEERWHEEL
+#define GREEN_STEERWHEEL
+//#define BLACK_STEERWHEEL
 
 #define LENGTH 1000
 #define gen2 1.414213562373/2.0
@@ -37,10 +38,11 @@
 
 #define YawMotorId                                     	0x205
 
-#ifdef BLACK_STEERWHEEL
+#if defined GREEN_STEERWHEEL
 #define FollowAngle              						-49.9499359f//26.134f
-#endif
-#ifdef YELLOW_STEERWHEEL
+#elif defined YELLOW_STEERWHEEL
+#define FollowAngle              						-76.3203506f//26.134f
+#elif defined BLACK_STEERWHEEL
 #define FollowAngle              						-76.3203506f//26.134f
 #endif 
 

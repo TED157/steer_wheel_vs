@@ -35,8 +35,8 @@
 #define DAMIAO_MIN_ANGLE 1.61
 float tor=-0.8;
 #elif defined YELLOW_STEERWHEEL
-#define DAMIAO_MAX_ANGLE 0.04
-#define DAMIAO_MIN_ANGLE -0.80
+#define DAMIAO_MAX_ANGLE -0.05
+#define DAMIAO_MIN_ANGLE -0.84
 float tor=-0.5;
 #elif defined BLACK_STEERWHEEL
 #define DAMIAO_MAX_ANGLE 0

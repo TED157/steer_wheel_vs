@@ -26,25 +26,28 @@ ext_game_robot_status_t Referee;
 Aimbot_Message_t Aimbot_Message;
 extern ext_power_heat_data_t power_heat_data_t;
 uint32_t F_Motor[8];
-float WheelAngle[4];
-fp32 wz;
-#ifdef BLACK_STEERWHEEL
-fp32 Angle_zero_6020[4] = {54.4768677, 126.819672, 103.393951, 126.995483};
-#endif
-#ifdef YELLOW_STEERWHEEL
+
+uint16_t last_HP=0;
+uint16_t reset_time=0;
+
+#if defined GREEN_STEERWHEEL
+fp32 Angle_zero_6020[4] = {47.1810455, 128.138214, 98.9989014, 67.6620636};
+#elif defined YELLOW_STEERWHEEL
+fp32 Angle_zero_6020[4] = {75.8808594, -54.7405701, 100.625061, 158.815765};
+#elif defined BLACK_STEERWHEEL
 fp32 Angle_zero_6020[4] = {75.8808594, -54.7405701, 100.625061, 158.815765};
 #endif
 //fp32 Angle_zero_6020[4] = {0, 0, 0, 0};
 fp32 Direction[5] = {-1.0, -1.0, 1.0, 1.0, -1.0};
 fp32 Maxspeed = 6000.0f;
 fp32 speed[4];
-fp32 angle[4];
 KFP Power_kf;
 fp32 Power_Max = 45.0f;
+
 float angle_minus;
-float run_per;
-//power control
 float last_speed[8] = {0},stall_kp[4]={0};
+uint8_t offline_solve[2] = {1,0};
+
 fp32 he = 0;
 float kp = 1.30 * 1.99999999e-06;
 float lijupower = 0.0f;
@@ -144,10 +147,10 @@ void CalculateThread(void const *pvParameters)
 		ChassisCommandUpdate();
 		chassis_powerloop(&Chassis);
 		CMS__();
-		Chassis_Control(Chassis.Current[0],
-						Chassis.Current[1],
-						Chassis.Current[2],
-						Chassis.Current[3],
+		Chassis_Control(Chassis.Current[0]*offline_solve[Offline.Motor[0]],
+						Chassis.Current[1]*offline_solve[Offline.Motor[1]],
+						Chassis.Current[2]*offline_solve[Offline.Motor[2]],
+						Chassis.Current[3]*offline_solve[Offline.Motor[3]],
 						Chassis.Current[4],
 						Chassis.Current[5],
 						Chassis.Current[6]/*speed_adjust_test*/,
@@ -245,11 +248,12 @@ void ChassisCommandUpdate()
 {
 	
 	
-		
-		//Chassis.wz = -Remote.rc.ch[2] / 660.0f * (1.0f + Chassis.Power_Proportion / Power_Max);
 	
-	if (Chassis.Mode == NOFORCE || Offline.PTZnode ==1 || Offline.Motor[4] || Offline.Motor[5] || Offline.Motor[6] || Offline.Motor[7])
+	//Chassis.wz = -Remote.rc.ch[2] / 660.0f * (1.0f + Chassis.Power_Proportion / Power_Max);
+	robot_state.current_HP == 0 ? reset_time = 0 : reset_time>3000 ? reset_time=3000 : reset_time++;
+	if (Chassis.Mode == NOFORCE || Offline.PTZnode ==1 || ((Offline.Motor[4] || Offline.Motor[5] || Offline.Motor[6] || Offline.Motor[7]) && reset_time<3000))
 	{
+		
 		Chassis.Current[0] = 0;
 		Chassis.Current[1] = 0;
 		Chassis.Current[2] = 0;

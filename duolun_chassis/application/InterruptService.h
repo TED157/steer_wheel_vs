@@ -33,7 +33,5 @@ void TimerTaskLoop500Hz_2();
 void TimerTaskLoop100Hz();
 
 extern void DeviceOfflineMonitorUpdate(OfflineMonitor_t *Monitor);
-extern uint8_t left_flag,right_flag;
-extern double t00,tk[4],t01,t02,ct,ct2,t03;
 extern int receive_times,send_times;
 #endif

@@ -45,7 +45,6 @@ typedef struct{
 }Aimbot_Message_t;
 
 extern Chassis_t Chassis;
-extern uint8_t left_flag,right_flag;
 extern Aimbot_Message_t        Aimbot_Message;
 
 void CalculateThread(void const * pvParameters);
