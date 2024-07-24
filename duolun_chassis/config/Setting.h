@@ -43,7 +43,7 @@
 #elif defined YELLOW_STEERWHEEL
 #define FollowAngle              						-76.3203506f//26.134f
 #elif defined BLACK_STEERWHEEL
-#define FollowAngle              						-15.0f//26.134f
+#define FollowAngle              						-20.4150848f//26.134f
 #endif 
 
 #define FOLLOW_KP						0.033f
