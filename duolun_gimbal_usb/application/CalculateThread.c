@@ -62,7 +62,7 @@ void ShootSpeedAdopt(void);
 //int dafu_flag = 0;
 
 
-bool_t single_shoot_flag=0;//��������
+bool_t single_shoot_flag=1;//��������
 bool_t auto_fire_flag=1;//�Զ����𿪹�
 bool_t switch_flag=0;//����л�����
 uint8_t No_noforce_flag=1;
@@ -333,6 +333,7 @@ void GimbalControlModeUpdate(void)
 // qylann: ���´���̫��
 uint8_t big_rune_flag = 0;
 uint8_t small_rune_flag = 0;
+uint32_t time=0;
 extern GimbalRequestState_t RequestStatePacket;
 void GimbalFireModeUpdate(void)
 {		
@@ -389,7 +390,13 @@ void GimbalFireModeUpdate(void)
 				gimbal_fire_countdown=0;
 		}
     if(Gimbal.StateMachine==GM_MATCH) 
-		{
+	{
+		// if((Aimbot.AimbotState & 0x02) != 0){
+		// 	HAL_GPIO_WritePin(Laser_GPIO_Port,Laser_Pin,GPIO_PIN_SET);
+		// }
+		// else{
+		// 	HAL_GPIO_WritePin(Laser_GPIO_Port,Laser_Pin,GPIO_PIN_RESET);
+		// }
         if(Gimbal.FireMode==GM_FIRE_UNABLE)
             Gimbal.FireMode=GM_FIRE_READY;
         if (Gimbal.FireMode==GM_FIRE_READY) 
@@ -401,7 +408,7 @@ void GimbalFireModeUpdate(void)
 								||((Gimbal.ControlMode==GM_MANUAL_OPERATE&&Remote.mouse.press_r!=PRESS)||auto_fire_flag==0))//�ֶ�����
 									&&((count*10<=Referee.Ammo0Limit.Cooling+onelastheat&&dealta_heat>20)||Referee.Ammo0Limit.Heat==0xFFFF)	)//�������ջ����� 
 						{	
-//							DMA_printf("%d\n",GetSystemTimer());
+							//DMA_printf("%d\n",GetSystemTimer());
 							//rune_shoot_flag=0;
 							Gimbal.FireMode=GM_FIRE_BUSY;									
 								gimbal_fire_countdown=ROTOR_TIMESET_BUSY;
@@ -735,14 +742,14 @@ void AmmoCommandUpdate(void)
 {
     if (Gimbal.FireMode == GM_FIRE_UNABLE){
         
-		if(Gimbal.MotorMeasure.ShootMotor.AmmoLeftMotorSpeed<-2500)
+		if(Gimbal.MotorMeasure.ShootMotor.AmmoLeftMotorSpeed < 2500*AMMO_LEFT_MOTOR_DIRECTION)
 		{
 			Gimbal.Output.AmmoLeft = PID_calc(  &Gimbal.Pid.AmmoLeft,
                                         Gimbal.MotorMeasure.ShootMotor.AmmoLeftMotorSpeed, 
                                         2000 * AMMO_LEFT_MOTOR_DIRECTION
 										);
 		}
-		if(Gimbal.MotorMeasure.ShootMotor.AmmoRightMotorSpeed>2500){
+		if(Gimbal.MotorMeasure.ShootMotor.AmmoRightMotorSpeed > 2500*AMMO_RIGHT_MOTOR_DIRECTION){
 			Gimbal.Output.AmmoRight = PID_calc( &Gimbal.Pid.AmmoRight, 
                                         Gimbal.MotorMeasure.ShootMotor.AmmoRightMotorSpeed, 
                                         2000 * AMMO_RIGHT_MOTOR_DIRECTION

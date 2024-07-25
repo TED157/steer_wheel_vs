@@ -8,19 +8,24 @@
 #define FT_REMOTE_OFFLINE_TIMEMAX  200
 
 // 用于区分三辆舵轮
-#define YELLOW_STEERWHEEL
-//#define GREEN_STEERWHEEL
+//#define YELLOW_STEERWHEEL
+#define GREEN_STEERWHEEL
 //#define BLACK_STEERWHEEL
 
 //区分pitch轴电机类型
-#if (defined YELLOW_STEERWHEEL) || (defined GREEN_STEERWHEEL)
+#if defined YELLOW_STEERWHEEL
+#define PARAMETER_FILE "YellowSteeringWheelParameter.h"
+#define DAMIAO_PITCH
+#elif defined GREEN_STEERWHEEL
+#define PARAMETER_FILE "GreenSteeringWheelParameter.h"
 #define DAMIAO_PITCH
 #elif defined BLACK_STEERWHEEL
+#define PARAMETER_FILE "BlackSteeringWheelParameter.h"
 #define GM6020_PITCH
 #endif
 
 // ���������ļ�
-#define PARAMETER_FILE "Infantry3Parameter.h"
+//#define PARAMETER_FILE "Infantry3Parameter.h"
 // ��λ�����ļ�
 #define KEYMAP_FILE "Infantry4KeyMap.h"
 // imu��װ����
