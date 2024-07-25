@@ -6,8 +6,8 @@
 //用于区分两辆舵轮
 
 //#define YELLOW_STEERWHEEL 
-// #define GREEN_STEERWHEEL
-#define BLACK_STEERWHEEL
+ #define GREEN_STEERWHEEL
+//#define BLACK_STEERWHEEL
 
 #define LENGTH 1000
 #define gen2 1.414213562373/2.0

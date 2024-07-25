@@ -595,10 +595,6 @@ void CMS__()
 	{
 		CMS_Data.Mode = NORMAL;	
 	}
-	if(power_heat_data_t.buffer_energy > 70)
-	{
-		CMS_Data.Mode = HIGH_SPEED;
-	}
 	cms_offline_counter ++;
 }
 uint8_t chassis_limit_update_flag=0;
@@ -804,13 +800,21 @@ void Fast_Turning_Control(Chassis_t* Chassis)
 	if((Chassis->vx != 0 || Chassis->vy != 0) && (Fabs(atan2(Chassis->vx,Chassis->vy)-atan2(Chassis->vx_last[0],Chassis->vy_last[0]))-PI/2) < 0.1 && (Fabs(atan2(Chassis->vx,Chassis->vy)-atan2(Chassis->vx_last[0],Chassis->vy_last[0]))-PI/2) > -0.1)
 	{
 		if(!Chassis->fast_turning_flag){
-			if(Power_Max>=80){
-				Chassis->fast_turning_counter=100;
-				k_turn = 0.001;
+			if(CMS_Data.Mode == FLY){
+				Chassis->fast_turning_counter=200;
+				k_turn = 0.005;
 			}
-			else if(Power_Max>=60){
+			else if(Power_Max>=100){
 				Chassis->fast_turning_counter=40;
 				k_turn = 0.025;
+			}
+			else if(Power_Max>=80){
+				Chassis->fast_turning_counter=20;
+				k_turn = 0.05;
+			}
+			else if(Power_Max>=60){
+				Chassis->fast_turning_counter=15;
+				k_turn = 0.066;
 			}
 			else{
 				Chassis->fast_turning_counter=10;
@@ -856,11 +860,11 @@ void Fast_Turning_Control(Chassis_t* Chassis)
 			Chassis->vx_last[1] = 0.01;
 			Chassis->vy_last[1] = 0.01;
 		}
-		if(vx_stable_num == 150){
+		if(vx_stable_num == 100){
 			Chassis->vx_last[0] = Chassis->vx_last[1];
 			vx_stable_num = 0;
 		}
-		if(vy_stable_num == 150){
+		if(vy_stable_num == 100){
 			Chassis->vy_last[0] = Chassis->vy_last[1];
 			vy_stable_num = 0;
 		}

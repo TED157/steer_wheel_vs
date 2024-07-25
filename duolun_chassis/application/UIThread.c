@@ -386,7 +386,7 @@ void UI(void const * argument)
 			}
 			else 
 			{
-				Char_Draw(&rune,"run",UI_Graph_Change,1,UI_Color_White,16,7,2,1805,71,"NORMAL");
+				Char_Draw(&rune,"run",UI_Graph_Change,1,UI_Color_White,16,7,2,1805,771,"NORMAL");
 				Char_ReFresh(rune);	
 			}
 		}
