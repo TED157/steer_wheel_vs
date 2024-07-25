@@ -386,12 +386,12 @@ void ChassisCommandUpdate()
 		if(((CMS_Data.cms_status) & (uint16_t) 1) != 1 && CMS_Data.Mode == FLY)
 		{
 			speed_up_time++;
-			if(speed_up_time>1250){
-				speed_up_time=1250;
+			if(speed_up_time>1000){
+				speed_up_time=1000;
 			}
-			Chassis.vx = ((cap_gain-1) * speed_up_time *0.0008 +1) * Chassis.vx ;
+			Chassis.vx = ((cap_gain-1) * speed_up_time *0.001 +1) * Chassis.vx ;
 			speed_adjust_test=Chassis.vx;
-			Chassis.vy = ((cap_gain-1) * speed_up_time *0.0008 +1) * Chassis.vy ;
+			Chassis.vy = ((cap_gain-1) * speed_up_time *0.001 +1) * Chassis.vy ;
 			Chassis.wz = 1.0 * Chassis.wz ;
 			
 		}
