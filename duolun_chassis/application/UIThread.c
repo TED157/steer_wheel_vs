@@ -283,7 +283,8 @@ void UI(void const * argument)
 			else{
 				Circle_Draw(&Motor_offline,"mto",UI_Graph_Change,0,UI_Color_Green,10,(uint32_t)(961),(uint32_t)(308),5);
 			}
-			if(power_heat_data_t.chassis_voltage<23000)
+			if(power_heat_data_t.chassis_voltage<22750
+				)
 				Line_Draw(&Posture_line,"pol",UI_Graph_Change,0,UI_Color_Yellow,25,(uint32_t)(961),(uint32_t)(228),(uint32_t)(961),(uint32_t)(288));
 			else
 			Line_Draw(&Posture_line,"pol",UI_Graph_Change,0,UI_Color_Main,25,(uint32_t)(961),(uint32_t)(228),(uint32_t)(961),(uint32_t)(288));

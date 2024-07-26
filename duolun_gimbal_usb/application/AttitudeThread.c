@@ -30,7 +30,7 @@ float bias=-0.00079999998f;//0.04375f;
 #elif defined GREEN_STEERWHEEL
 float bias=0.002156f;//0.04375f;
 #elif defined BLACK_STEERWHEEL
-float bias=0.0;//0.04375f;
+float bias=-0.001;//0.04375f;
 #endif
 /**
   * @brief          control the temperature of bmi088

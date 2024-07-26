@@ -122,9 +122,9 @@ typedef __PACKED_STRUCT
 	//自瞄目标角速度
     fp32 TargetPitchSpeed;
     fp32 TargetYawSpeed;
-	//目标相机系下2d位置
-	int16_t TargetX;
-	int16_t TargetY;
+//	//目标相机系下2d位置
+//	int TargetX;
+//	int16_t TargetY;
 	//时间戳
     uint32_t SystemTimer;
     // 包尾
@@ -132,6 +132,7 @@ typedef __PACKED_STRUCT
 	// 处理后数据
 	fp32 PitchRelativeAngle;
     fp32 YawRelativeAngle;
+	uint8_t Aimbot_Shoot_Flag;
 }
 AimbotFrame_SCM_t;
 

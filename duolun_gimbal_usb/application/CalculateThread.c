@@ -89,6 +89,7 @@ extern uint8_t ammo_speed_ad_flag;
 extern DM_motor_t DamiaoPitchMotorMeasure;
 uint16_t shoot_delay=0;
 uint8_t auto_cap_flag=0;
+extern uint8_t shoot_flag;
 void CalculateThread(void const * pvParameters)
 {
 	
@@ -333,7 +334,6 @@ void GimbalControlModeUpdate(void)
 // qylann: ���´���̫��
 uint8_t big_rune_flag = 0;
 uint8_t small_rune_flag = 0;
-uint32_t time=0;
 extern GimbalRequestState_t RequestStatePacket;
 void GimbalFireModeUpdate(void)
 {		
@@ -391,25 +391,19 @@ void GimbalFireModeUpdate(void)
 		}
     if(Gimbal.StateMachine==GM_MATCH) 
 	{
-		// if((Aimbot.AimbotState & 0x02) != 0){
-		// 	HAL_GPIO_WritePin(Laser_GPIO_Port,Laser_Pin,GPIO_PIN_SET);
-		// }
-		// else{
-		// 	HAL_GPIO_WritePin(Laser_GPIO_Port,Laser_Pin,GPIO_PIN_RESET);
-		// }
         if(Gimbal.FireMode==GM_FIRE_UNABLE)
             Gimbal.FireMode=GM_FIRE_READY;
         if (Gimbal.FireMode==GM_FIRE_READY) 
 				{						
 						if((SHOOT_COMMAND_KEYMAP)//�յ������ַ���ָ��
-							&&((Gimbal.ControlMode==GM_AIMBOT_RUNES&&((Aimbot.AimbotState & 0x02) != 0)&&auto_fire_flag==1)
+							&&((Gimbal.ControlMode==GM_AIMBOT_RUNES&&Aimbot_s.Aimbot_Shoot_Flag==1&&auto_fire_flag==1)
 								||(Gimbal.ControlMode==GM_AIMBOT_OPERATE&&((Aimbot.AimbotState & 0x02) != 0)&&auto_fire_flag==1)//�Զ�����
 						        ||((Gimbal.ControlMode==GM_AIMBOT_OPERATE||Gimbal.ControlMode==GM_AIMBOT_RUNES)&&auto_fire_flag==0)//���Զ�����
 								||((Gimbal.ControlMode==GM_MANUAL_OPERATE&&Remote.mouse.press_r!=PRESS)||auto_fire_flag==0))//�ֶ�����
 									&&((count*10<=Referee.Ammo0Limit.Cooling+onelastheat&&dealta_heat>20)||Referee.Ammo0Limit.Heat==0xFFFF)	)//�������ջ����� 
 						{	
 							//DMA_printf("%d\n",GetSystemTimer());
-							//rune_shoot_flag=0;
+							Aimbot_s.Aimbot_Shoot_Flag = 2;
 							Gimbal.FireMode=GM_FIRE_BUSY;									
 								gimbal_fire_countdown=ROTOR_TIMESET_BUSY;
 								if(single_shoot_flag)
@@ -420,7 +414,7 @@ void GimbalFireModeUpdate(void)
 				if(Gimbal.FireMode==GM_FIRE_BUSY&&gimbal_fire_countdown<=0)
 				{
 						if(single_shoot_flag==1||Offline.RefereeAmmoLimitNode0==1)
-								gimbal_fire_countdown=450;//450;//time interval
+								gimbal_fire_countdown=300;//time interval
 						else 
 								gimbal_fire_countdown=(int)(10000.0/(dealta_heat/1.4+Referee.Ammo0Limit.Cooling/1.8+5)-45);
 						Gimbal.FireMode=GM_FIRE_COOLING; //no shoot
@@ -742,14 +736,14 @@ void AmmoCommandUpdate(void)
 {
     if (Gimbal.FireMode == GM_FIRE_UNABLE){
         
-		if(Gimbal.MotorMeasure.ShootMotor.AmmoLeftMotorSpeed < 2500*AMMO_LEFT_MOTOR_DIRECTION)
+		if(Gimbal.MotorMeasure.ShootMotor.AmmoLeftMotorSpeed*AMMO_LEFT_MOTOR_DIRECTION > 2500)
 		{
 			Gimbal.Output.AmmoLeft = PID_calc(  &Gimbal.Pid.AmmoLeft,
                                         Gimbal.MotorMeasure.ShootMotor.AmmoLeftMotorSpeed, 
                                         2000 * AMMO_LEFT_MOTOR_DIRECTION
 										);
 		}
-		if(Gimbal.MotorMeasure.ShootMotor.AmmoRightMotorSpeed > 2500*AMMO_RIGHT_MOTOR_DIRECTION){
+		if(Gimbal.MotorMeasure.ShootMotor.AmmoRightMotorSpeed*AMMO_RIGHT_MOTOR_DIRECTION > 2500){
 			Gimbal.Output.AmmoRight = PID_calc( &Gimbal.Pid.AmmoRight, 
                                         Gimbal.MotorMeasure.ShootMotor.AmmoRightMotorSpeed, 
                                         2000 * AMMO_RIGHT_MOTOR_DIRECTION
@@ -948,8 +942,8 @@ void GetGimbalRequestState(GimbalRequestState_t *RequestState)
         
     Aimbot_Message.AimbotState = Aimbot.AimbotState;
 	Aimbot_Message.AimbotTarget = Aimbot.AimbotTarget;
-	Aimbot_Message.TargetX = Aimbot.TargetX;
-	Aimbot_Message.TargetY = Aimbot.TargetY;
+//	Aimbot_Message.TargetX = Aimbot.TargetX;
+//	Aimbot_Message.TargetY = Aimbot.TargetY;
     
     RequestState->Reserve = 0x00;
     

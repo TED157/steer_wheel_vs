@@ -968,19 +968,19 @@
               <FilePath>..\Config\UsbPackage.h</FilePath>
             </File>
             <File>
-              <FileName>BlackSteeringWheel.h</FileName>
+              <FileName>BlackSteeringWheelParameter.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\Config\BlackSteeringWheel.h</FilePath>
+              <FilePath>..\Config\BlackSteeringWheelParameter.h</FilePath>
             </File>
             <File>
-              <FileName>GreenSteeringWheel.h</FileName>
+              <FileName>GreenSteeringWheelParameter.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\Config\GreenSteeringWheel.h</FilePath>
+              <FilePath>..\Config\GreenSteeringWheelParameter.h</FilePath>
             </File>
             <File>
-              <FileName>YellowSteeringWheel.h</FileName>
+              <FileName>YellowSteeringWheelParameter.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\Config\YellowSteeringWheel.h</FilePath>
+              <FilePath>..\Config\YellowSteeringWheelParameter.h</FilePath>
             </File>
           </Files>
         </Group>

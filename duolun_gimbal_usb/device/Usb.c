@@ -44,6 +44,12 @@ void UsbReceive(uint8_t *rx_data, uint8_t len)
 			memcpy(&Aimbot_s, rx_data, len);
 			Aimbot_s.YawRelativeAngle = Aimbot_s.Yaw ;
 			Aimbot_s.PitchRelativeAngle = Aimbot_s.Pitch ;
+			if((Aimbot_s.AimbotState&0x02)==2){
+				Aimbot_s.Aimbot_Shoot_Flag = 1;
+			}
+			else if(Aimbot_s.Aimbot_Shoot_Flag == 2){
+				Aimbot_s.Aimbot_Shoot_Flag = 0;
+			}
 			break;
 		default:
 			break;

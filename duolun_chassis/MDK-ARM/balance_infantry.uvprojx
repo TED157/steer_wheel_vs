@@ -774,6 +774,21 @@
               <FileType>5</FileType>
               <FilePath>..\config\CanPacket.h</FilePath>
             </File>
+            <File>
+              <FileName>BlackSteeringWheelParameter.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\config\BlackSteeringWheelParameter.h</FilePath>
+            </File>
+            <File>
+              <FileName>GreenSteeringWheelParameter.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\config\GreenSteeringWheelParameter.h</FilePath>
+            </File>
+            <File>
+              <FileName>YellowSteeringWheelParameter.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\config\YellowSteeringWheelParameter.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

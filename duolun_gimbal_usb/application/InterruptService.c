@@ -463,7 +463,7 @@ void TimerTaskLoop1000Hz(void)
     if ((RefereeInterpolationTimer % 100) == 0) {
         AmmoHeatSettlementInterpolation();
     }
-	//DMA_printf("%d,%f\r\n",DamiaoPitchMotorMeasure.stall_counter,DamiaoPitchMotorMeasure.para.vel);
+	//DMA_printf("%d,%d\r\n",Aimbot.TargetX,rece_num);
 }
 
 
