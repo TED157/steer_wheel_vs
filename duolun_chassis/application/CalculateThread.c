@@ -33,9 +33,9 @@ uint16_t reset_time=0;
 #if defined GREEN_STEERWHEEL
 fp32 Angle_zero_6020[4] = {47.1810455, 128.138214, 98.9989014, 67.6620636};
 #elif defined YELLOW_STEERWHEEL
-fp32 Angle_zero_6020[4] = {75.8808594, -54.7405701, 100.625061, 158.815765};
+fp32 Angle_zero_6020[4] = {73.9470215, -48.1040192, 99.1307678, 158.683929};
 #elif defined BLACK_STEERWHEEL
-fp32 Angle_zero_6020[4] = {-21.3380585,-21.3380585 , -78.7376404, 69.376144};
+fp32 Angle_zero_6020[4] = {-20.8106537,-50.2136383 , -77.9465256, 69.5079803};
 #endif
 //fp32 Angle_zero_6020[4] = {0, 0, 0, 0};
 fp32 Direction[5] = {-1.0, -1.0, 1.0, 1.0, -1.0};

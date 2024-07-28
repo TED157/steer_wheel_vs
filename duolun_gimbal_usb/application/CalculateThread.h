@@ -42,6 +42,7 @@ typedef enum{
     GM_NO_CONTROL       =   0x00,
     GM_RESET_POSITION           ,
     GM_MANUAL_OPERATE           ,
+    GM_AUTO_REVERSE             ,//yaw轴转180度
     GM_AIMBOT_OPERATE           ,
     GM_AIMBOT_RUNES             ,
 } GimbalControlMode_e;

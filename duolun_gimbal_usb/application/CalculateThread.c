@@ -18,6 +18,7 @@
 #include "Setting.h"
 #include "kalman filter.h"
 #include "Usb.h"
+#include "math.h"
 
 #include PARAMETER_FILE
 #include KEYMAP_FILE
@@ -29,13 +30,13 @@ extern DMA_HandleTypeDef hdma_usart1_tx;
 																				sprintf((char*)u1_buf,__VA_ARGS__))
 extern uint8_t u1_buf[30];
 
-Gimbal_t                Gimbal;//„1¤7„1¤70À60ü80Á0„1¤75ú5
-Chassis_t               Chassis;//„1¤7„1¤7„1¤7„1¤70ü80Á0
-RC_ctrl_t               Remote;//0Û1„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
-AimbotFrame_SCM_t         Aimbot;//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
-OfflineMonitor_t        Offline;//„1¤7„1¤7„1¤71²8„1¤7„1¤75ú5„1¤7„1¤7
-RefereeInformation_t    Referee;//„1¤7„1¤7„1¤7„1¤70Ð30È1„1¤7„1¤7„1¤7„1¤7
-GimbalRequestState_t RequestStatePacket;//„1¤7„1¤70À6„1¤7„1¤7„1¤7„1¤7can„1¤7„1¤7
+Gimbal_t                Gimbal;//Â„1Â¤7Â„1Â¤7Â0Å”6Â0Ã¼8Â0Ã0Â„1Â¤7Â5Ãº5
+Chassis_t               Chassis;//Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Ã¼8Â0Ã0
+RC_ctrl_t               Remote;//Â0Å°1Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7
+AimbotFrame_SCM_t         Aimbot;//Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7
+OfflineMonitor_t        Offline;//Â„1Â¤7Â„1Â¤7Â„1Â¤7Â1Ë›8Â„1Â¤7Â„1Â¤7Â5Ãº5Â„1Â¤7Â„1Â¤7
+RefereeInformation_t    Referee;//Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Ä3Â0ÄŒ1Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7
+GimbalRequestState_t RequestStatePacket;//Â„1Â¤7Â„1Â¤7Â0Å”6Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7canÂ„1Â¤7Â„1Â¤7
 Aimbot_Message_t Aimbot_Message;
 																				
 first_order_filter_type_t  pitch_aimbot_filter;
@@ -62,21 +63,23 @@ void ShootSpeedAdopt(void);
 //int dafu_flag = 0;
 
 
-bool_t single_shoot_flag=1;//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
-bool_t auto_fire_flag=1;//„1¤70é8„1¤7„1¤7„1¤7„1¤7Ÿ4ú7„1¤7
-bool_t switch_flag=0;//„1¤7„1¤7„1¤7„1¤7§Ý„1¤7„1¤7„1¤7„1¤7„1¤7
+bool_t single_shoot_flag=0;//å•å‘
+bool_t auto_fire_flag=1;//è‡ªåŠ¨å¼€ç«
+bool_t switch_flag=0;//å¼¹èˆ±ç›–
+bool_t Yaw_Reverse_Flag=0;//yawè½´è½¬180åº¦
 uint8_t No_noforce_flag=1;
 int16_t dealta_heat=0;
 int32_t onelasttime=0;
 int16_t onelastheat=0;
 uint16_t count=0;
 
-int32_t    gimbal_init_countdown = 0;          //  „1¤7„1¤70À6„1¤7„1¤70¶3„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70µ2„1¤7„1¤7
-int32_t    gimbal_fire_countdown = 0;          //  „1¤7„1¤70À6„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70û8„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70µ2„1¤7„1¤7
-int32_t    gimbal_lagging_counter = 0;         //  „1¤7„1¤70À6„1¤7„1¤70û8„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
+int32_t    gimbal_init_countdown = 0;          //  äº‘å°åˆå§‹åŒ–å€’è®¡æ—¶å™¨
+int32_t    gimbal_fire_countdown = 0;          //  äº‘å°å°„å‡»æ‹¨ç›˜è½¬åŠ¨å€’è®¡æ—¶å™¨
+int32_t    gimbal_lagging_counter = 0;         //  äº‘å°å µè½¬è®¡æ•°å™¨
 
+fp32       Reverse_Target_Yaw_Angle = 0;        //Yaw_Auto_ReverseçŠ¶æ€ä¸‹çš„ç›®æ ‡è§’åº¦
 
-GimbalControlMode_e Mode_Last;//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70Ý50µ2„1¤70Á9„1¤70ü80Á0
+GimbalControlMode_e Mode_Last;//ä¸Šä¸€å¸§çš„äº‘å°æ¨¡å¼
 fp32 LimitNormalization(fp32 input);
 extern ImuPacketNormal_t ImuPacket;
 extern ImuPacketMini_t ImuPackageMini;
@@ -96,43 +99,43 @@ void CalculateThread(void const * pvParameters)
 	uint16_t control_counter = 0;
 	
     osDelay(500);
-    PID_init(&Gimbal.Pid.AmmoLeft, PID_POSITION, AMMO_LEFT_SPEED_30MS, M3508_MAX_OUTPUT, M3508_MAX_IOUTPUT);//„1¤7„1¤7„1¤7„1¤703„1¤7„1¤7„1¤7„1¤7pid„1¤7„1¤70¶3„1¤7„1¤7
+    PID_init(&Gimbal.Pid.AmmoLeft, PID_POSITION, AMMO_LEFT_SPEED_30MS, M3508_MAX_OUTPUT, M3508_MAX_IOUTPUT);//å·¦å³æ‘©æ“¦è½®pidåˆå§‹åŒ–
     PID_init(&Gimbal.Pid.AmmoRight, PID_POSITION, AMMO_RIGHT_SPEED_30MS, M3508_MAX_OUTPUT, M3508_MAX_IOUTPUT);
-//    LoopFifoFp32_init(&Gimbal.ImuBuffer.YawLoopPointer, Gimbal.ImuBuffer.YawAddress, 64);//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7fifo„1¤7„1¤70¶3„1¤7„1¤7
+//    LoopFifoFp32_init(&Gimbal.ImuBuffer.YawLoopPointer, Gimbal.ImuBuffer.YawAddress, 64);//Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7fifoÂ„1Â¤7Â„1Â¤7Â0Å›3Â„1Â¤7Â„1Â¤7
 //    LoopFifoFp32_init(&Gimbal.ImuBuffer.PitchLoopPointer, Gimbal.ImuBuffer.PitchAddress, 64);
-    first_order_filter_init(&pitch_aimbot_filter, 1000, &pitch_aimbot_filter_param);//„1¤70»2„1¤7„1¤7„1¤7„1¤7„1¤70¶3„1¤7„1¤7
+    first_order_filter_init(&pitch_aimbot_filter, 1000, &pitch_aimbot_filter_param);//æ»¤æ³¢å™¨åˆå§‹åŒ–
 	DaMiao_Motor_Init(&DamiaoPitchMotorMeasure);
 	//HAL_GPIO_WritePin(Laser_GPIO_Port, Laser_Pin, GPIO_PIN_RESET);
 	while(1)
     {
-		Remote = *get_remote_control_point();//„1¤7„1¤7„1¤7„1¤70Û1„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
-        Aimbot=*get_usb_aimbot_command_point();//„1¤7„1¤70§0„1¤7„1¤7„1¤7„1¤70ö8„1¤7„1¤7
-        GetRefereeInformation(&Referee);//„1¤7„1¤70§0„1¤7„1¤7„1¤7„1¤70Ð30È1„1¤7„1¤70Î4 „1¤7„1¤7„1¤7„1¤7¨¿„1¤71’1„1¤7„1¤7„1¤7„1¤7„1¤7
-        DeviceOfflineMonitorUpdate(&Offline);//„1¤7„1¤70§000„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70Î4
+		Remote = *get_remote_control_point();//æ›´æ–°é¥æŽ§å™¨æ•°æ®
+        Aimbot=*get_usb_aimbot_command_point();//èŽ·å–è‡ªçž„æŒ‡ä»¤
+        GetRefereeInformation(&Referee);//èŽ·å–è£åˆ¤ç³»ç»Ÿä¿¡æ¯ åŒ…æ‹¬æžªå£çš„é™åˆ¶
+        DeviceOfflineMonitorUpdate(&Offline);//èŽ·å–æ¨¡å—ç¦»çº¿ä¿¡æ¯
         
 //        LoopFifoFp32_push(&Gimbal.ImuBuffer.YawLoopPointer, Gimbal.Imu.YawAngle);
-//        LoopFifoFp32_push(&Gimbal.ImuBuffer.PitchLoopPointer, Gimbal.Imu.PitchAngle);//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70ð7
+//        LoopFifoFp32_push(&Gimbal.ImuBuffer.PitchLoopPointer, Gimbal.Imu.PitchAngle);//Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Ä‘7
         
-        GimbalStateMachineUpdate();//„1¤7„1¤7„1¤7„1¤70Û1„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70¼4„1¤7„1¤7„1¤7„1¤7„1¤70¢20ü80Á0„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70¶3„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70ç9„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
-        ChassisStateMachineUpdate();//„1¤7„1¤7„1¤7„1¤70ü80Á0„1¤703„1¤7
-        GimbalControlModeUpdate();//„1¤7„1¤7„1¤7„1¤70§7
-        GimbalFireModeUpdate();//„1¤7„1¤7„1¤7„1¤70ü80Á00û8„1¤7„1¤7
-        GimbalPIDUpdate();//„1¤7„1¤70À6pid„1¤7„1¤70ü4„1¤7„1¤7
-        RotorPIDUpdate();//„1¤7„1¤7„1¤7„1¤7pid„1¤7„1¤70ü4„1¤7„1¤7
-        GimbalMeasureUpdate();//„1¤7„1¤70§0„1¤7„1¤7„1¤7„1¤7„1¤7imu„1¤7„1¤7„1¤7„1¤7
-        GimbalCommandUpdate();//0ö8„1¤7„1¤7„1¤70û8„1¤7„1¤7
-        ChassisCommandUpdate();//„1¤7„1¤7„1¤7„1¤70ö8„1¤7„1¤70û8„1¤7„1¤7
-        RotorCommandUpdate();//„1¤7„1¤7„1¤70Â9„1¤7„1¤7„1¤70û8„1¤7„1¤7
+        GimbalStateMachineUpdate();//æ ¹æ®é¥æŽ§å™¨æ‹¨æ†å†³å®šå½“å‰çŠ¶æ€ï¼ˆæ— åŠ›ï¼Œåˆå§‹åŒ–ï¼Œæµ‹è¯•ï¼Œæ¯”èµ›ï¼‰
+        ChassisStateMachineUpdate();//åº•ç›˜çŠ¶æ€æ”¹å˜
+        GimbalControlModeUpdate();//æŽ§åˆ¶æƒ
+        GimbalFireModeUpdate();//å¼€ç«çŠ¶æ€è½¬æ¢
+        GimbalPIDUpdate();//äº‘å°pidé‡è£…è½½
+        RotorPIDUpdate();//æ‹¨ç›˜pidé‡è£…è½½
+        GimbalMeasureUpdate();//èŽ·å–ç”µæœºå’Œimuæ•°æ®
+        GimbalCommandUpdate();//æŒ‡ä»¤çš„è½¬æ¢
+        ChassisCommandUpdate();//åº•ç›˜æŒ‡ä»¤è½¬æ¢
+        RotorCommandUpdate();//æ‹¨ç›˜æŽ§åˆ¶è½¬æ¢
 //		if(ammo_speed_ad_flag==1){
 //			ShootSpeedAdopt();
 //			ammo_speed_ad_flag=0;
-//			}//03„1¤7„1¤7„1¤7„1¤7„1¤71‹80©0„1¤7„1¤7„1¤7
-        AmmoCommandUpdate();//„1¤7„1¤7„1¤7‚4î0„1¤70÷5„1¤7„1¤7„1¤70û8„1¤7„1¤7
+//			}//Â0Â3Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â1Â‹8Â0Å 0Â„1Â¤7Â„1Â¤7Â„1Â¤7
+        AmmoCommandUpdate();//å‘å°„éƒ¨åˆ†æŽ§åˆ¶è½¬åŒ–
 		
 		if(control_counter > 10)
 		{
 			control_counter = 0;
-			GimbalRequestStatePacketSend();//„1¤7„1¤70À60ö8„1¤7„1¤7„1¤7¡¤„1¤7
+			GimbalRequestStatePacketSend();//äº‘å°æŒ‡ä»¤ä¸‹å‘
 		}
 		control_counter+=1;
 			
@@ -140,7 +143,7 @@ void CalculateThread(void const * pvParameters)
 		
 		
         DebugLEDShow();
-        //BoomBayCover();//„1¤7„1¤7„1¤70ð40£6„1¤7„1¤7„1¤7
+        //BoomBayCover();//Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Ä‘4Â0Å6Â„1Â¤7Â„1Â¤7Â„1Â¤7
 				
 				minus = Aimbot.SystemTimer - ImuPacket.TimeStamp;
 
@@ -158,14 +161,14 @@ void CalculateThread(void const * pvParameters)
 
 void GimbalStateMachineUpdate(void)
 {
-		// „1¤7„1¤7„1¤7„1¤7„1¤7„1¤71±7„1¤7„1¤7„1¤7
+		// Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â1Ä…7Â„1Â¤7Â„1Â¤7Â„1Â¤7
 //    if(Offline.PitchMotor==DEVICE_OFFLINE||Offline.YawMotor == DEVICE_OFFLINE)
 //		{
 //        if(Gimbal.StateMachine!=GM_NO_FORCE)
 //						Gimbal.StateMachine = GM_NO_FORCE;
 //        return;
 //    }
-    // 0Û1„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤71±7„1¤7„1¤7„1¤7
+    // é¥æŽ§å™¨ç¦»çº¿ä¿æŠ¤
     if(Offline.Remote==DEVICE_OFFLINE && Offline.Ft_Remote==DEVICE_OFFLINE)
 		{
         if(Gimbal.StateMachine!=GM_NO_FORCE)
@@ -173,11 +176,11 @@ void GimbalStateMachineUpdate(void)
         return;
     }
     
-    // „1¤7„1¤70À60ü80Á0„1¤7„1¤7
+    // äº‘å°çŠ¶æ€æœº
 	if(Offline.Remote==0){
 		switch (Remote.rc.s[0])
-			{
-			// „1¤70Ü6„1¤7„1¤70»4„1¤7„1¤7„1¤7„1¤70Î5„1¤7„1¤7„1¤70À6„1¤7„1¤7¦Ë„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7000¶4„1¤7„1¤7„1¤7„1¤7000¶4„1¤70†7„1¤703„1¤7„1¤7„1¤7„1¤7
+		{
+			// å³æ‹¨æ†æ‰“åˆ°æœ€ä¸Šï¼Œäº‘å°å¤ä½åŽè¿›å…¥æ¯”èµ›æ¨¡å¼ï¼Œè¯¥æ¨¡å¼ä¸‹å¼€æ‘©æ“¦è½®
 			case RC_SW_UP:
 				if (Gimbal.StateMachine == GM_NO_FORCE)
 							{
@@ -190,7 +193,7 @@ void GimbalStateMachineUpdate(void)
 						gimbal_init_countdown--;
 					}
 					else{
-						Gimbal.StateMachine = GM_MATCH;//„1¤7„1¤7„1¤7„1¤7000¶4
+						Gimbal.StateMachine = GM_MATCH;//æ¯”èµ›æ¨¡å¼
 					}
 				}
 				else{
@@ -198,7 +201,7 @@ void GimbalStateMachineUpdate(void)
 				}
 				break;
 			
-			// „1¤70Ü6„1¤7„1¤70»4„1¤7„1¤7§Þ‚48„1¤7„1¤70À6„1¤7„1¤7¦Ë„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7000¶4
+			// å³æ‹¨æ†æ‰“åˆ°ä¸­é—´ï¼Œäº‘å°å¤ä½åŽè¿›å…¥è°ƒè¯•æ¨¡å¼
 			case RC_SW_MID:
 				if (Gimbal.StateMachine == GM_NO_FORCE){
 					Gimbal.StateMachine = GM_INIT;
@@ -218,7 +221,7 @@ void GimbalStateMachineUpdate(void)
 				}
 				break;
 				
-			// „1¤70Ü6„1¤7„1¤70»4„1¤7„1¤7„1¤7„1¤70„5„1¤7„1¤7„1¤70Û1„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤71¥1„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70À6„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7000¶4
+			// å³æ‹¨æ†æ‰“åˆ°æœ€ä¸‹ï¼Œæˆ–é¥æŽ§å™¨æ•°æ®å‡ºé”™ï¼Œäº‘å°è¿›å…¥æ— åŠ›æ¨¡å¼
 			case RC_SW_DOWN:
 				if (Gimbal.StateMachine != GM_NO_FORCE){
 					Gimbal.StateMachine = GM_NO_FORCE;
@@ -231,7 +234,8 @@ void GimbalStateMachineUpdate(void)
 				break;
 		}
 	}
-	if(CheakKeyPressOnce(KEY_PRESSED_OFFSET_Z)){
+	//å›¾ä¼ é“¾è·¯ä¸‹äº‘å°çŠ¶æ€æœº
+	if(!CheakKeyPress(KEY_PRESSED_OFFSET_SHIFT) && CheakKeyPressOnce(KEY_PRESSED_OFFSET_Z)){
 		No_noforce_flag=(No_noforce_flag+1)%2;
 	}
 	if(No_noforce_flag && Offline.Remote==DEVICE_OFFLINE)
@@ -269,7 +273,7 @@ void ChassisStateMachineUpdate(void)
 	
     //if ((Gimbal.StateMachine == GM_NO_FORCE)  ||  (Gimbal.StateMachine == GM_INIT)) {
 		if((Gimbal.StateMachine==GM_NO_FORCE))
-        Chassis.ChassisState=CHASSIS_NO_FORCE;//„1¤7„1¤70À6„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70£6„1¤709„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70ü80Á0
+        Chassis.ChassisState=CHASSIS_NO_FORCE;//äº‘å°æ— åŠ›ï¼Œåº•ç›˜å¼ºåˆ¶è¿›å…¥æ— åŠ›çŠ¶æ€
 		if(Gimbal.StateMachine==GM_INIT)
 		{
 			 if(Remote.rc.s[1]==2)
@@ -280,8 +284,8 @@ void ChassisStateMachineUpdate(void)
     if(Gimbal.StateMachine==GM_TEST||Gimbal.StateMachine==GM_MATCH)
 		{
 		if(Remote.rc.s[1]==2)
-				{//„1¤7„1¤72¬2„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70¢7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
-            if(CHASSIS_ROTATE_SWITCH_KEYMAP || (RemoteDial() == -1.0f && Gimbal.StateMachine == GM_TEST))//§³„1¤7„1¤7„1¤7„1¤7000¶4
+				{//å·¦ä¾§æ‹¨æ†åœ¨æœ€ä¸‹é¢æ˜¯åº•ç›˜æœ‰åŠ›
+            if(CHASSIS_ROTATE_SWITCH_KEYMAP || (RemoteDial() == -1.0f && Gimbal.StateMachine == GM_TEST))//å°é™€èžºæ¨¡å¼
                 Chassis.ChassisState=CHASSIS_ROTATE;
 			else if(CHASSIS_ROTATE_RESERVE_KEYMAP && Gimbal.StateMachine==GM_TEST)
 				Chassis.ChassisState=CHASSIS_ROTATE_RESERVE;
@@ -313,16 +317,32 @@ void SetGimbalDisable(void)
 
 void GimbalControlModeUpdate(void)
 {
-    // „1¤7„1¤7„1¤7„1¤7000¶4„1¤7„1¤7
+    // æ¯”èµ›æ¨¡å¼ä¸‹æˆ–è°ƒè¯•æ¨¡å¼
     if(Gimbal.StateMachine==GM_MATCH||Gimbal.StateMachine==GM_TEST)
 		{
-        // „1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70Ý6„1¤7or s[1]=1„1¤7„1¤7„1¤7„1¤7„1¤70ä2„1¤7„1¤7„1¤7„1¤7„1¤70‘7„1¤7‚6þ7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
+        // å¦‚æžœæŒ‰ä¸‹é¼ æ ‡å³é”®or s[1]=1å¹¶ä¸”è§†è§‰å‘çŽ°ç›®æ ‡ï¼Œè¿›å…¥è‡ªçž„æŽ§åˆ¶
         if(((Remote.mouse.press_r==PRESS)||(Remote.rc.s[1]==RC_SW_UP))&&(Offline.AimbotDataNode == DEVICE_ONLINE)&&(Aimbot.AimbotState&AIMBOT_TARGET_INSIDE_OFFSET))
 				{
 					Gimbal.ControlMode = GM_AIMBOT_OPERATE;
 				}
-        else
-            Gimbal.ControlMode = GM_MANUAL_OPERATE;//„1¤70ö6„1¤70ü80Á0
+        else{
+			if(GIMBAL_CMD_YAW_RESERVE__KEYMAP){
+				Yaw_Reverse_Flag = (Yaw_Reverse_Flag + 1) % 2;
+				Reverse_Target_Yaw_Angle = Gimbal.Imu.YawAngle>0?Gimbal.Imu.YawAngle-181:Gimbal.Imu.YawAngle+179;
+			}
+			if(Yaw_Reverse_Flag){
+				if(fabs(Gimbal.Imu.YawAngle - Reverse_Target_Yaw_Angle)<5){
+					Gimbal.ControlMode = GM_MANUAL_OPERATE;//æ‰‹åŠ¨çŠ¶æ€
+					Yaw_Reverse_Flag = 0;
+				}
+				else{
+					Gimbal.ControlMode = GM_AUTO_REVERSE;//yawè½´è‡ªåŠ¨è½¬180åº¦
+				}
+			}
+			else{
+				Gimbal.ControlMode = GM_MANUAL_OPERATE;//æ‰‹åŠ¨çŠ¶æ€
+			}
+		}
     }	
     if(Gimbal.StateMachine==GM_INIT)
         Gimbal.ControlMode=GM_RESET_POSITION;
@@ -331,7 +351,7 @@ void GimbalControlModeUpdate(void)
 }
 
 
-// qylann: „1¤7„1¤7„1¤70…7„1¤7„1¤7„1¤70À9„1¤7„1¤7
+// qylann: Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Â…7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Å”9Â„1Â¤7Â„1Â¤7
 uint8_t big_rune_flag = 0;
 uint8_t small_rune_flag = 0;
 extern GimbalRequestState_t RequestStatePacket;
@@ -339,11 +359,11 @@ void GimbalFireModeUpdate(void)
 {		
 	
 	
-    //„1¤70é8„1¤7„1¤7„1¤7„1¤7Ÿ4ú7„1¤7,key Q
+    //è‡ªåŠ¨å¼€ç«å¼€å…³,key Q
 	  if(FIRE_MODE_KEYMAP) 
         auto_fire_flag=(auto_fire_flag+1)%2;   
 	
-		//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7,key B
+	//å•å‘å¼€å…³,key B
 	  if(BIG_RUNE_KEYMAP&&((Remote.mouse.press_r==PRESS)||(Remote.rc.s[1]==RC_SW_UP))) 
 	{
 		small_rune_flag = 0;
@@ -391,16 +411,19 @@ void GimbalFireModeUpdate(void)
 		}
     if(Gimbal.StateMachine==GM_MATCH) 
 	{
-        if(Gimbal.FireMode==GM_FIRE_UNABLE)
+        if(Gimbal.ControlMode!=GM_AIMBOT_RUNES || !SHOOT_COMMAND_KEYMAP){
+			Aimbot_s.Aimbot_Shoot_Flag = 0;
+		}
+		if(Gimbal.FireMode==GM_FIRE_UNABLE)
             Gimbal.FireMode=GM_FIRE_READY;
         if (Gimbal.FireMode==GM_FIRE_READY) 
 				{						
-						if((SHOOT_COMMAND_KEYMAP)//„1¤70ð1„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70ö7„1¤7„1¤7„1¤70ö8„1¤7„1¤7
+						if((SHOOT_COMMAND_KEYMAP)//æ”¶åˆ°æ“ä½œæ‰‹å‘å¼¹æŒ‡ä»¤
 							&&((Gimbal.ControlMode==GM_AIMBOT_RUNES&&Aimbot_s.Aimbot_Shoot_Flag==1&&auto_fire_flag==1)
-								||(Gimbal.ControlMode==GM_AIMBOT_OPERATE&&((Aimbot.AimbotState & 0x02) != 0)&&auto_fire_flag==1)//„1¤70é8„1¤7„1¤7„1¤7„1¤7„1¤7
-						        ||((Gimbal.ControlMode==GM_AIMBOT_OPERATE||Gimbal.ControlMode==GM_AIMBOT_RUNES)&&auto_fire_flag==0)//„1¤7„1¤7„1¤70é8„1¤7„1¤7„1¤7„1¤7„1¤7
-								||((Gimbal.ControlMode==GM_MANUAL_OPERATE&&Remote.mouse.press_r!=PRESS)||auto_fire_flag==0))//„1¤70ö6„1¤7„1¤7„1¤7„1¤7„1¤7
-									&&((count*10<=Referee.Ammo0Limit.Cooling+onelastheat&&dealta_heat>20)||Referee.Ammo0Limit.Heat==0xFFFF)	)//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70ð7„1¤7„1¤7„1¤7„1¤7„1¤7 
+								||(Gimbal.ControlMode==GM_AIMBOT_OPERATE&&((Aimbot.AimbotState & 0x02) != 0)&&auto_fire_flag==1)//Â„1Â¤7Â0Ã©8Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7
+						        ||((Gimbal.ControlMode==GM_AIMBOT_OPERATE||Gimbal.ControlMode==GM_AIMBOT_RUNES)&&auto_fire_flag==0)//Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Ã©8Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7
+								||((Gimbal.ControlMode==GM_MANUAL_OPERATE&&Remote.mouse.press_r!=PRESS)||auto_fire_flag==0))//Â„1Â¤7Â0Ã¶6Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7
+									&&((count*10<=Referee.Ammo0Limit.Cooling+onelastheat&&dealta_heat>20)||Referee.Ammo0Limit.Heat==0xFFFF)	)//Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Ä‘7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7 
 						{	
 							//DMA_printf("%d\n",GetSystemTimer());
 							Aimbot_s.Aimbot_Shoot_Flag = 2;
@@ -427,7 +450,7 @@ void GimbalFireModeUpdate(void)
 				if(Gimbal.FireMode==GM_FIRE_COOLING&&gimbal_fire_countdown<=0) 
 						Gimbal.FireMode=GM_FIRE_READY;    
 				
-        //  „1¤7ƒ4§4„1¤7„1¤7„1¤7000¶4„1¤7„1¤70ü80Á0„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤71’3„1¤7„1¤7„1¤70û8
+        //å¼‚å¸¸å°„å‡»æ¨¡å¼çš„çŠ¶æ€æœºï¼Œç”¨äºŽåå µè½¬
 				if(Gimbal.FireMode==GM_FIRE_LAGGING)
 				{
 						if(gimbal_fire_countdown<=0)
@@ -521,6 +544,24 @@ void GimbalPIDUpdate(void)
                             PITCH_MAX_IOUTPUT
                             );
     }
+	else if(CMthis == GM_AUTO_REVERSE){
+		cascade_PID_init(   &Gimbal.Pid.Yaw, 
+							YAW_ANGLE_AUTO_REVERSE_OPERATE,
+                            YAW_SPEED_AUTO_REVERSE_OPERATE,  
+                            YAW_MAX_SPEED, 
+                            YAW_MAX_ISPEED, 
+                            GM6020_MAX_OUTPUT, 
+                            GM6020_MAX_IOUTPUT
+                            );
+        cascade_PID_init(   &Gimbal.Pid.Pitch, 
+                            PITCH_ANGLE_MANUAL_OPERATE, 
+                            PITCH_SPEED_MANUAL_OPERATE, 
+                            PITCH_MAX_SPEED, 
+                            PITCH_MAX_ISPEED, 
+                            PITCH_MAX_OUTPUT, 
+                            PITCH_MAX_IOUTPUT
+                            );
+	}
     else if (CMthis == GM_RESET_POSITION){
         cascade_PID_init(   &Gimbal.Pid.Yaw, 
                             YAW_ANGLE_RESET_POSITION, 
@@ -602,8 +643,7 @@ void GimbalMeasureUpdate(void)
 
 
 
-int t=10;
-
+//int t=10;
 fp32 aimbot_pitch_bias = 0;
 
 void GimbalCommandUpdate(void)
@@ -624,12 +664,12 @@ void GimbalCommandUpdate(void)
 	else if (aimbot_pitch_bias < -6) {
 		aimbot_pitch_bias = -6;
 	}
-    if (Gimbal.ControlMode == GM_MANUAL_OPERATE){
+    if (Gimbal.ControlMode == GM_MANUAL_OPERATE || (__ARM_isnanf(Aimbot.YawRelativeAngle)||__ARM_isnanf(Aimbot.PitchRelativeAngle))){
         Gimbal.Command.Yaw += GIMBAL_CMD_YAW_KEYMAP;
         Gimbal.Command.Pitch += GIMBAL_CMD_PITCH_KEYMAP;
         Gimbal.Command.Yaw = loop_fp32_constrain(Gimbal.Command.Yaw, Gimbal.Imu.YawAngle - 180.0f, Gimbal.Imu.YawAngle + 180.0f);
         Gimbal.Command.Pitch = fp32_constrain(Gimbal.Command.Pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE);
-        Gimbal.Output.Yaw = cascade_PID_calc(&Gimbal.Pid.Yaw, Gimbal.Imu.YawAngle-Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*rotate_yaw_bias , Gimbal.Imu.YawSpeed, Gimbal.Command.Yaw);//-Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*rotate_yaw_bias;
+        Gimbal.Output.Yaw = cascade_PID_calc(&Gimbal.Pid.Yaw, Gimbal.Imu.YawAngle/*-Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*rotate_yaw_bias*/ , Gimbal.Imu.YawSpeed, Gimbal.Command.Yaw)+Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*100;
         Gimbal.Output.Pitch = cascade_PID_calc(&Gimbal.Pid.Pitch, Gimbal.Imu.PitchAngle, Gimbal.Imu.PitchSpeed, Gimbal.Command.Pitch);
 		Gimbal.Output.DaMiao_Pitch = cascade_PID_calc(&Gimbal.Pid.Pitch, Gimbal.Imu.PitchAngle, Gimbal.Imu.PitchSpeed, Gimbal.Command.Pitch);
 //		if(Gimbal.StateMachine ==GM_MATCH) {
@@ -657,19 +697,23 @@ void GimbalCommandUpdate(void)
         Gimbal.Output.Yaw = cascade_PID_calc(&Gimbal.Pid.Yaw, Gimbal.Imu.YawAngle-Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*rotate_yaw_bias , Gimbal.Imu.YawSpeed, Gimbal.Command.Yaw);
         Gimbal.Output.Pitch = cascade_PID_calc(&Gimbal.Pid.Pitch, Gimbal.Imu.PitchAngle, Gimbal.Imu.PitchSpeed, Gimbal.Command.Pitch);
 		Gimbal.Output.DaMiao_Pitch = cascade_PID_calc(&Gimbal.Pid.Pitch, Gimbal.Imu.PitchAngle, Gimbal.Imu.PitchSpeed, Gimbal.Command.Pitch);
-    } 
-//    else if (Gimbal.ControlMode == GM_AIMBOT_RUNES){
-//        
-//        Gimbal.Command.Yaw = Aimbot.YawRelativeAngle;
-//        Gimbal.Command.Pitch = Aimbot.PitchRelativeAngle;
-////        Gimbal.Command.Yaw = LoopFifoFp32_read(&Gimbal.ImuBuffer.YawLoopPointer, (GetSystemTimer() - Aimbot.SystemTimer)) + Aimbot.YawRelativeAngle;
-////        Gimbal.Command.Pitch = LoopFifoFp32_read(&Gimbal.ImuBuffer.PitchLoopPointer, (GetSystemTimer() - Aimbot.SystemTimer)) + Aimbot.PitchRelativeAngle + aimbot_pitch_bias;
-//        Gimbal.Command.Yaw = loop_fp32_constrain(Gimbal.Command.Yaw, Gimbal.Imu.YawAngle - 180.0f, Gimbal.Imu.YawAngle + 180.0f);
-//        Gimbal.Command.Pitch = fp32_constrain(Gimbal.Command.Pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE);
-//        Gimbal.Output.Yaw = cascade_PID_calc(&Gimbal.Pid.Yaw, Gimbal.Imu.YawAngle-Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*0.0132 , Gimbal.Imu.YawSpeed, Gimbal.Command.Yaw);
-//        Gimbal.Output.Pitch = cascade_PID_calc(&Gimbal.Pid.Pitch, Gimbal.Imu.PitchAngle, Gimbal.Imu.PitchSpeed, Gimbal.Command.Pitch);
-
-//    }
+    }
+	else if(Gimbal.ControlMode == GM_AUTO_REVERSE){
+//		DMA_printf("%f\n",Gimbal.Pid.Yaw.out);
+		if((Gimbal.Pid.Yaw.pid_outside.error[0]>20 || Gimbal.Pid.Yaw.pid_outside.error[0]>-20) && Chassis.ChassisState == CHASSIS_ROTATE)
+			Gimbal.Pid.Yaw.pid_outside.Kp=7.4f;
+		else if(Gimbal.Pid.Yaw.pid_outside.error[0]>20 || Gimbal.Pid.Yaw.pid_outside.error[0]>-20)
+			Gimbal.Pid.Yaw.pid_outside.Kp=9.5f;
+		else
+			Gimbal.Pid.Yaw.pid_outside.Kp=7.3f;
+		 Gimbal.Command.Yaw = Reverse_Target_Yaw_Angle;
+        Gimbal.Command.Pitch += GIMBAL_CMD_PITCH_KEYMAP;
+        Gimbal.Command.Yaw = loop_fp32_constrain(Gimbal.Command.Yaw, Gimbal.Imu.YawAngle - 180.0f, Gimbal.Imu.YawAngle + 180.0f);
+        Gimbal.Command.Pitch = fp32_constrain(Gimbal.Command.Pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE);
+        Gimbal.Output.Yaw = cascade_PID_calc(&Gimbal.Pid.Yaw, Gimbal.Imu.YawAngle , Gimbal.Imu.YawSpeed, Gimbal.Command.Yaw);//-Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*rotate_yaw_bias;
+        Gimbal.Output.Pitch = cascade_PID_calc(&Gimbal.Pid.Pitch, Gimbal.Imu.PitchAngle, Gimbal.Imu.PitchSpeed, Gimbal.Command.Pitch);
+		Gimbal.Output.DaMiao_Pitch = cascade_PID_calc(&Gimbal.Pid.Pitch, Gimbal.Imu.PitchAngle, Gimbal.Imu.PitchSpeed, Gimbal.Command.Pitch);
+	}
     else if (Gimbal.ControlMode == GM_RESET_POSITION){
         Gimbal.Command.Yaw = Gimbal.Imu.YawAngle;
         Gimbal.Command.Pitch = Gimbal.Imu.PitchAngle;
@@ -731,10 +775,23 @@ void RotorCommandUpdate(void)
 
 
 
-
 void AmmoCommandUpdate(void)
 {
-    if (Gimbal.FireMode == GM_FIRE_UNABLE){
+    if(AMMO_SPEED_UP_KEYMAP)
+	{
+		ammo_speed_l+=20;
+		ammo_speed_r+=20;
+	}
+	if(AMMO_SPEED_DOWN_KEYMAP)
+	{
+		ammo_speed_l-=20;
+		ammo_speed_r-=20;
+	}
+	if(ammo_speed_l<6500) ammo_speed_l=6500;
+	if(ammo_speed_r<6500) ammo_speed_r=6500;
+	if(ammo_speed_l>8000) ammo_speed_l=8000;
+	if(ammo_speed_r>8000) ammo_speed_r=8000;
+	if (Gimbal.FireMode == GM_FIRE_UNABLE){
         
 		if(Gimbal.MotorMeasure.ShootMotor.AmmoLeftMotorSpeed*AMMO_LEFT_MOTOR_DIRECTION > 2500)
 		{
@@ -757,20 +814,6 @@ void AmmoCommandUpdate(void)
 		}
         return;
     }
-	if(CheakKeyPressOnce(KEY_PRESSED_OFFSET_X))
-	{
-		ammo_speed_l+=20;
-		ammo_speed_r+=20;
-	}
-	if(CheakKeyPressOnce(KEY_PRESSED_OFFSET_V))
-	{
-		ammo_speed_l-=20;
-		ammo_speed_r-=20;
-	}
-	if(ammo_speed_l<6500) ammo_speed_l=6500;
-	if(ammo_speed_r<6500) ammo_speed_r=6500;
-	if(ammo_speed_l>8000) ammo_speed_l=8000;
-	if(ammo_speed_r>8000) ammo_speed_r=8000;
     Gimbal.Output.AmmoLeft = PID_calc(  &Gimbal.Pid.AmmoLeft,
                                         Gimbal.MotorMeasure.ShootMotor.AmmoLeftMotorSpeed, 
                                         ammo_speed_l * AMMO_LEFT_MOTOR_DIRECTION
@@ -835,10 +878,10 @@ void GetGimbalMotorOutput(GimbalOutput_t *out)
 //		
 //   
 //    if ((cover_flag == 1)  ||  (cover_flag == 0)) {
-//        __HAL_TIM_SetCompare(&htim1, TIM_CHANNEL_1, 1400);//„1¤70‘20•0„1¤72245 „1¤7„1¤7„1¤7„1¤7 1250    „1¤7„1¤7
+//        __HAL_TIM_SetCompare(&htim1, TIM_CHANNEL_1, 1400);//Â„1Â¤7Â0Â‘2Â0Â•0Â„1Â¤72245 Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7 1250    Â„1Â¤7Â„1Â¤7
 //     }
 //    if (cover_flag == 2) {
-//         __HAL_TIM_SetCompare(&htim1, TIM_CHANNEL_1, 600);//„1¤70‘20•0„1¤7500   „1¤71„9„1¤7
+//         __HAL_TIM_SetCompare(&htim1, TIM_CHANNEL_1, 600);//Â„1Â¤7Â0Â‘2Â0Â•0Â„1Â¤7500   Â„1Â¤7Â1Â„9Â„1Â¤7
 //    }
 //    
 //    
@@ -858,7 +901,7 @@ void GetGimbalRequestState(GimbalRequestState_t *RequestState)
     RequestState->AimbotRequest = 0x00;
 	if(Gimbal.StateMachine==GM_MATCH||Gimbal.StateMachine==GM_TEST)
 	{
-     // „1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70Ý6„1¤7or s[1]=1„1¤7„1¤7„1¤7„1¤7„1¤70ä2„1¤7„1¤7„1¤7„1¤7„1¤70‘7„1¤7‚6þ7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
+     // Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Ã6Â„1Â¤7or s[1]=1Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Ã¤2Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Â‘7Â„1Â¤7Â‚6Å£7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7
 		if(((Remote.mouse.press_r==PRESS)||(Remote.rc.s[1]==RC_SW_UP)))
 		{
 			GimabalImu.mode |= (uint8_t)(1 << 0);
@@ -894,7 +937,7 @@ void GetGimbalRequestState(GimbalRequestState_t *RequestState)
     
     if (Chassis.ChassisState != CHASSIS_NO_FORCE) {
         RequestState->ChassisStateRequest |= (uint8_t)(1 << 1);
-        // „1¤70»6„1¤70ü80Á0
+        // Â„1Â¤7Â0Å¥6Â„1Â¤7Â0Ã¼8Â0Ã0
         if (Chassis.ChassisState == CHASSIS_NO_MOVE) {
             RequestState->ChassisStateRequest |= (uint8_t)(1 << 2);
         }
@@ -1015,12 +1058,12 @@ void ShootSpeedAdopt(void)
 	shoot_speed_now=Referee.Ammo0Speed;
 	if(shoot_speed_last!=shoot_speed_now)
 	{
-		//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤71‹7„1¤7„1¤7„1¤726.5m/s
+		//Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â1Â‹7Â„1Â¤7Â„1Â¤7Â„1Â¤726.5m/s
 		if(shoot_speed_now < (shoot_limit - 3.5f) && shoot_speed_now >= (shoot_limit - 7.0f) && shoot_ad_stop_flag==0)
 		{
 			low_speed_time_num++;
 		}
-		/*„1¤7„1¤7„1¤7„1¤7„1¤7§Ø„1¤7*/ 		/*„1¤7„1¤7„1¤7„1¤7„1¤7§Ø„1¤7*/
+		/*Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â§Å˜Â„1Â¤7*/ 		/*Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â§Å˜Â„1Â¤7*/
 		if(((shoot_limit - 2.0f) <= shoot_speed_now ) ||low_speed_time_num == 3 )
 		{	
 			if((shoot_limit - 2.0)<shoot_speed_now)
@@ -1029,7 +1072,7 @@ void ShootSpeedAdopt(void)
 				{speed_high_flg = (shoot_limit - 2.5 - shoot_speed_now) * 30;}
 			low_speed_time_num = 0;		
 		}
-		/*„1¤7§Ø0Ð3„1¤7„1¤7„1¤7„1¤70¢9„1¤7„1¤7„1¤726.5„1¤7„1¤728.00õ8„1¤7„1¤7*/
+		/*Â„1Â¤7Â§Å˜Â0Ä3Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0Ë˜9Â„1Â¤7Â„1Â¤7Â„1Â¤726.5Â„1Â¤7Â„1Â¤728.0Â0Å‘8Â„1Â¤7Â„1Â¤7*/
 		if(shoot_speed_now >= (shoot_limit - 2.0f))
 		{
 			speed_dec_flag ++;
@@ -1049,7 +1092,7 @@ void ShootSpeedAdopt(void)
 //		}
 //		if(shoot_ad_stop_flag)
 //			speed_add_flag=0;
-		//„1¤7„1¤7„1¤7¦Â„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
+		//Â„1Â¤7Â„1Â¤7Â„1Â¤7ÅšÃ‚Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7Â„1Â¤7
 		if(speed_dec_flag == 3)
 		{
 			shoot_adot++;
@@ -1073,7 +1116,7 @@ void ShootSpeedAdopt(void)
 		Gimbal.Output.Rotor=0;
 	}
 	shoot_speed_last= shoot_speed_now;
-	/*„1¤7„1¤7„1¤71‹6„1¤7„1¤7„1¤7 „1¤7„1¤7„1¤70È2„1¤7„1¤7„1¤7*/
+	/*Â„1Â¤7Â„1Â¤7Â„1Â¤7Â1Â‹6Â„1Â¤7Â„1Â¤7Â„1Â¤7 Â„1Â¤7Â„1Â¤7Â„1Â¤7Â0ÄŒ2Â„1Â¤7Â„1Â¤7Â„1Â¤7*/
 	if(Gimbal.StateMachine == GM_MATCH){
 	ammo_speed_l = ammo_speed_l + speed_high_flg;
 	ammo_speed_r = ammo_speed_r + speed_high_flg;

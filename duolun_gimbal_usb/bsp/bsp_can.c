@@ -5,7 +5,6 @@
 
 static uint32_t             send_mail_box;
 static CAN_TxHeaderTypeDef  can_tx_message;
-HAL_StatusTypeDef result;
 void can_filter_init(void)
 {
 
@@ -44,5 +43,5 @@ void CanSendMessage(CAN_HandleTypeDef *hcan, uint32_t id, uint32_t dlc, uint8_t 
     
     can_tx_message.StdId = id;
     
-    result=HAL_CAN_AddTxMessage(hcan, &can_tx_message, message, &send_mail_box);
+    HAL_CAN_AddTxMessage(hcan, &can_tx_message, message, &send_mail_box);
 }

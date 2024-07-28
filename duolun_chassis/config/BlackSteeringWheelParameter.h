@@ -15,15 +15,15 @@
 #define SPEED_6020_KI							0.0f
 #define SPEED_6020_KD							0.0f
 
-#define POSITION_6020_KP_1                      3.8f
+#define POSITION_6020_KP_1                      4.0f//3.8f
 #define POSITION_6020_KI_1                      0.0815f
-#define POSITION_6020_KD_1                      0.000000f
+#define POSITION_6020_KD_1                      0.0000f
 
-#define POSITION_6020_KP_2                      3.8f
+#define POSITION_6020_KP_2                      4.0f//3.8f
 #define POSITION_6020_KI_2                      0.0815f
-#define POSITION_6020_KD_2                      0.000000f
+#define POSITION_6020_KD_2                      0.0000f
 
-#define speed_3508_KP							3600.0f
+#define speed_3508_KP							3800.0f
 #define speed_3508_KI							0.0f
 #define speed_3508_KD							0.0f
 
