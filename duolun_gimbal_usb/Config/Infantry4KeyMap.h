@@ -34,20 +34,20 @@
 // 高速
 #define CHASSIS_HIGH_SPEED_KEYMAP       CheakKeyPress(KEY_PRESSED_OFFSET_C) //|| (RemoteDial() == -1.0f)
 // 不动
-#define CHASSIS_STOP_KEYMAP             CheakKeyPress(KEY_PRESSED_OFFSET_F)
+#define CHASSIS_STOP_KEYMAP             CheakKeyPress(KEY_PRESSED_OFFSET_CTRL)
 
 // 超级电容开关
 #define SUPER_CAP_SWITCH_KEYMAP         CheakKeyPress(KEY_PRESSED_OFFSET_C)  
 
-// 小陀螺
-#define CHASSIS_ROTATE_SWITCH_KEYMAP    CheakKeyPress(KEY_PRESSED_OFFSET_SHIFT)  /*|| (RemoteDial() == -1.0f)*/ ||+ CheakKeyPress(KEY_PRESSED_OFFSET_CTRL)
-//高速小陀螺
-#define CHASSIS_HIGH_SPEED_ROTATE       CheakKeyPress(KEY_PRESSED_OFFSET_CTRL)
+// 小陀螺长按
+#define CHASSIS_ROTATE_SWITCH_KEYMAP    CheakKeyPress(KEY_PRESSED_OFFSET_SHIFT)  /*|| (RemoteDial() == -1.0f)*/
+//小陀螺点按
+#define CHASSIS_ROTATE_KICK_KEYMAP      CheakKeyPressOnce(KEY_PRESSED_OFFSET_F)
 //反向小陀螺
 #define CHASSIS_ROTATE_RESERVE_KEYMAP   RemoteDial() == 1.0f
 
 //自动电容
-#define AUTO_CAP_KEYMAP             CheakKeyPressOnce(KEY_PRESSED_OFFSET_R)
+#define AUTO_CAP_KEYMAP                  CheakKeyPressOnce(KEY_PRESSED_OFFSET_R)
 
 
 // 自瞄补偿

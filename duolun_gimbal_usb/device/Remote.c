@@ -1,10 +1,10 @@
 /**
   ****************************(C) COPYRIGHT 2019 DJI****************************
   * @file       remote_control.c/h
-  * @brief      Ò£¿ØÆ÷´¦Àí£¬Ò£¿ØÆ÷ÊÇÍ¨¹ıÀàËÆSBUSµÄĞ­Òé´«Êä£¬ÀûÓÃDMA´«Êä·½Ê½½ÚÔ¼CPU
-  *             ×ÊÔ´£¬ÀûÓÃ´®¿Ú¿ÕÏĞÖĞ¶ÏÀ´À­Æğ´¦Àíº¯Êı£¬Í¬Ê±Ìá¹©Ò»Ğ©µôÏßÖØÆôDMA£¬´®¿Ú
-  *             µÄ·½Ê½±£Ö¤ÈÈ²å°ÎµÄÎÈ¶¨ĞÔ¡£
-  * @note       ¸ÃÈÎÎñÊÇÍ¨¹ı´®¿ÚÖĞ¶ÏÆô¶¯£¬²»ÊÇfreeRTOSÈÎÎñ
+  * @brief      é¥æ§å™¨å¤„ç†ï¼Œé¥æ§å™¨æ˜¯é€šè¿‡ç±»ä¼¼SBUSçš„åè®®ä¼ è¾“ï¼Œåˆ©ç”¨DMAä¼ è¾“æ–¹å¼èŠ‚çº¦CPU
+  *             èµ„æºï¼Œåˆ©ç”¨ä¸²å£ç©ºé—²ä¸­æ–­æ¥æ‹‰èµ·å¤„ç†å‡½æ•°ï¼ŒåŒæ—¶æä¾›ä¸€äº›æ‰çº¿é‡å¯DMAï¼Œä¸²å£
+  *             çš„æ–¹å¼ä¿è¯çƒ­æ’æ‹”çš„ç¨³å®šæ€§ã€‚
+  * @note       è¯¥ä»»åŠ¡æ˜¯é€šè¿‡ä¸²å£ä¸­æ–­å¯åŠ¨ï¼Œä¸æ˜¯freeRTOSä»»åŠ¡
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     Dec-26-2018     RM              1. done
@@ -29,11 +29,11 @@
 
 extern OfflineMonitor_t OfflineMonitor;
 
-//Ò£¿ØÆ÷³ö´íÊı¾İÉÏÏŞ
+//é¥æ§å™¨å‡ºé”™æ•°æ®ä¸Šé™
 #define RC_CHANNAL_ERROR_VALUE 700
 
 
-//È¡Õıº¯Êı
+//å–æ­£å‡½æ•°
 static int16_t RC_abs(int16_t value);
 /**
   * @brief          remote control protocol resolution
@@ -42,22 +42,22 @@ static int16_t RC_abs(int16_t value);
   * @retval         none
   */
 /**
-  * @brief          Ò£¿ØÆ÷Ğ­Òé½âÎö
-  * @param[in]      sbus_buf: Ô­ÉúÊı¾İÖ¸Õë
-  * @param[out]     rc_ctrl: Ò£¿ØÆ÷Êı¾İÖ¸
+  * @brief          é¥æ§å™¨åè®®è§£æ
+  * @param[in]      sbus_buf: åŸç”Ÿæ•°æ®æŒ‡é’ˆ
+  * @param[out]     rc_ctrl: é¥æ§å™¨æ•°æ®æŒ‡
   * @retval         none
   */
 void sbus_to_rc(uint8_t DmaBufNmb);
 void FigureTransmission_to_rc(uint8_t DmaBufNmb);
 
 //remote control data 
-//Ò£¿ØÆ÷¿ØÖÆ±äÁ¿
+//é¥æ§å™¨æ§åˆ¶å˜é‡
 RC_ctrl_t rc_ctrl;
 remote_control_t ft_rc;
-//½ÓÊÕÔ­Ê¼Êı¾İ£¬Îª18¸ö×Ö½Ú£¬¸øÁË36¸ö×Ö½Ú³¤¶È£¬·ÀÖ¹DMA´«ÊäÔ½½ç
+//æ¥æ”¶åŸå§‹æ•°æ®ï¼Œä¸º18ä¸ªå­—èŠ‚ï¼Œç»™äº†36ä¸ªå­—èŠ‚é•¿åº¦ï¼Œé˜²æ­¢DMAä¼ è¾“è¶Šç•Œ
 static uint8_t sbus_rx_buf[2][SBUS_RX_BUF_NUM];
 uint8_t usart6_buf[2][USART_RX_BUF_LENGHT];
-//±ßÑØ´¥·¢¼ì²â
+//è¾¹æ²¿è§¦å‘æ£€æµ‹
 uint16_t KeyFormerChannal = 0;
 uint16_t KeyJumpChannal = 0;
 uint16_t KeyUsed = 0;
@@ -69,7 +69,7 @@ uint16_t KeyUsed = 0;
   * @retval         none
   */
 /**
-  * @brief          Ò£¿ØÆ÷³õÊ¼»¯
+  * @brief          é¥æ§å™¨åˆå§‹åŒ–
   * @param[in]      none
   * @retval         none
   */
@@ -85,19 +85,19 @@ void remote_control_init(void)
   * @retval         remote control data point
   */
 /**
-  * @brief          »ñÈ¡Ò£¿ØÆ÷Êı¾İÖ¸Õë
+  * @brief          è·å–é¥æ§å™¨æ•°æ®æŒ‡é’ˆ
   * @param[in]      none
-  * @retval         Ò£¿ØÆ÷Êı¾İÖ¸Õë
+  * @retval         é¥æ§å™¨æ•°æ®æŒ‡é’ˆ
   */
 const RC_ctrl_t *get_remote_control_point(void)
 {
     return &rc_ctrl;
 }
 
-//ÅĞ¶ÏÒ£¿ØÆ÷Êı¾İÊÇ·ñ³ö´í£¬
+//åˆ¤æ–­é¥æ§å™¨æ•°æ®æ˜¯å¦å‡ºé”™ï¼Œ
 uint8_t RC_data_is_error(void)
 {
-    //½ûÖ¹Ê¹ÓÃgo toÓï¾ä£¡£¡£¡£¡£¡£¡
+    //ç¦æ­¢ä½¿ç”¨go toè¯­å¥ï¼ï¼ï¼ï¼ï¼ï¼
     if (RC_abs(rc_ctrl.rc.ch[0]) > RC_CHANNAL_ERROR_VALUE)
     {
         memset(&rc_ctrl, 0, sizeof(rc_ctrl));
@@ -142,7 +142,7 @@ void slove_data_error(void)
 }
 
 
-//È¡Õıº¯Êı
+//å–æ­£å‡½æ•°
 static int16_t RC_abs(int16_t value)
 {
     if (value > 0)
@@ -161,9 +161,9 @@ static int16_t RC_abs(int16_t value)
   * @retval         none
   */
 /**
-  * @brief          Ò£¿ØÆ÷Ğ­Òé½âÎö
-  * @param[in]      sbus_buf: Ô­ÉúÊı¾İÖ¸Õë
-  * @param[out]     rc_ctrl: Ò£¿ØÆ÷Êı¾İÖ¸
+  * @brief          é¥æ§å™¨åè®®è§£æ
+  * @param[in]      sbus_buf: åŸç”Ÿæ•°æ®æŒ‡é’ˆ
+  * @param[out]     rc_ctrl: é¥æ§å™¨æ•°æ®æŒ‡
   * @retval         none
   */
 void sbus_to_rc(uint8_t DmaBufNmb)
@@ -220,12 +220,12 @@ void FigureTransmission_to_rc(uint8_t DmaBufNmb)
 	
 }
 
-//¼üÅÌÓ¦ÓÃ¹¦ÄÜ
-//¼üÅÌÇøÓò·ÖÎª³¤°´´¥·¢µÄ¹¦ÄÜÇøºÍµã°´´¥·¢µÄ¹¦ÄÜÇø
-//ÆäÖĞ W¡¢A¡¢S¡¢D¡¢SHIFT¡¢CTRL¡¢F Îª³¤°´´¥·¢µÄ¹¦ÄÜÇø
-//ÆäËû°´¼üÎªµã°´¹¦ÄÜÇø
+//é”®ç›˜åº”ç”¨åŠŸèƒ½
+//é”®ç›˜åŒºåŸŸåˆ†ä¸ºé•¿æŒ‰è§¦å‘çš„åŠŸèƒ½åŒºå’Œç‚¹æŒ‰è§¦å‘çš„åŠŸèƒ½åŒº
+//å…¶ä¸­ Wã€Aã€Sã€Dã€SHIFTã€CTRLã€F ä¸ºé•¿æŒ‰è§¦å‘çš„åŠŸèƒ½åŒº
+//å…¶ä»–æŒ‰é”®ä¸ºç‚¹æŒ‰åŠŸèƒ½åŒº
 
-//³¤°´´¥·¢ÇøÓòµÄ¼üÖµ¼ì²â
+//é•¿æŒ‰è§¦å‘åŒºåŸŸçš„é”®å€¼æ£€æµ‹
 
 bool_t CheakKeyPress(uint16_t Key)
 {
@@ -257,7 +257,7 @@ bool_t CheakKeyPressOnce(uint16_t Key)
 }
 
 
-// ¹éÒ»»¯Ò¡¸ËÖµ
+// å½’ä¸€åŒ–æ‘‡æ†å€¼
 fp32 RemoteChannalRightX()
 {
     return (rc_ctrl.rc.ch[1] / 660.0f);
@@ -279,7 +279,7 @@ fp32 RemoteDial()
     return (rc_ctrl.rc.ch[4] / 660.0f);
 }
 
-// ¹éÒ»»¯Êó±êÒÆ¶¯
+// å½’ä¸€åŒ–é¼ æ ‡ç§»åŠ¨
 fp32 MouseMoveX()
 {
     return (rc_ctrl.mouse.x / 32768.0f);
@@ -289,7 +289,7 @@ fp32 MouseMoveY()
     return (rc_ctrl.mouse.y / 32768.0f);
 }
 
-// Êó±ê×óÓÒ¼ü
+// é¼ æ ‡å·¦å³é”®
 bool_t MousePressLeft()
 {
     return rc_ctrl.mouse.press_l;
@@ -299,7 +299,7 @@ bool_t MousePressRight()
     return rc_ctrl.mouse.press_r;
 }
 
-// ²¦¸ËÎ»ÖÃ¼ì²â
+// æ‹¨æ†ä½ç½®æ£€æµ‹
 bool_t SwitchRightUpSide()
 {
     return (rc_ctrl.rc.s[0] == RC_SW_UP);

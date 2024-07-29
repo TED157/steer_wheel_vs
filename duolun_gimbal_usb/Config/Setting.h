@@ -8,8 +8,8 @@
 #define FT_REMOTE_OFFLINE_TIMEMAX  200
 
 // 用于区分三辆舵轮
-#define YELLOW_STEERWHEEL
-//#define GREEN_STEERWHEEL
+//#define YELLOW_STEERWHEEL
+#define GREEN_STEERWHEEL
 //#define BLACK_STEERWHEEL
 
 //区分pitch轴电机类型

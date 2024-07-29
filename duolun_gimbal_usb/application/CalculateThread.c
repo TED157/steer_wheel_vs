@@ -67,6 +67,7 @@ bool_t single_shoot_flag=0;//单发
 bool_t auto_fire_flag=1;//自动开火
 bool_t switch_flag=0;//弹舱盖
 bool_t Yaw_Reverse_Flag=0;//yaw轴转180度
+bool_t Chassis_Rotate_Flag=0;//点按小陀螺
 uint8_t No_noforce_flag=1;
 int16_t dealta_heat=0;
 int32_t onelasttime=0;
@@ -92,6 +93,7 @@ extern uint8_t ammo_speed_ad_flag;
 extern DM_motor_t DamiaoPitchMotorMeasure;
 uint16_t shoot_delay=0;
 uint8_t auto_cap_flag=0;
+uint8_t Yaw_reverse_interval=0;//yaw转180度间的时间间隔
 extern uint8_t shoot_flag;
 void CalculateThread(void const * pvParameters)
 {
@@ -272,21 +274,29 @@ void ChassisStateMachineUpdate(void)
 {   
 	
     //if ((Gimbal.StateMachine == GM_NO_FORCE)  ||  (Gimbal.StateMachine == GM_INIT)) {
-		if((Gimbal.StateMachine==GM_NO_FORCE))
+	if((Gimbal.StateMachine==GM_NO_FORCE))
         Chassis.ChassisState=CHASSIS_NO_FORCE;//云台无力，底盘强制进入无力状态
-		if(Gimbal.StateMachine==GM_INIT)
-		{
-			 if(Remote.rc.s[1]==2)
-					Chassis.ChassisState=CHASSIS_FOLLOW;
-			 else
-					Chassis.ChassisState=CHASSIS_NO_FORCE;
-		}
+	if(Gimbal.StateMachine==GM_INIT)
+	{
+		 if(Remote.rc.s[1]==2)
+			Chassis.ChassisState=CHASSIS_FOLLOW;
+		 else
+			Chassis.ChassisState=CHASSIS_NO_FORCE;
+	}
     if(Gimbal.StateMachine==GM_TEST||Gimbal.StateMachine==GM_MATCH)
-		{
+	{
+		if(CHASSIS_ROTATE_KICK_KEYMAP){
+			Chassis_Rotate_Flag = (Chassis_Rotate_Flag+1)%2;
+		}
 		if(Remote.rc.s[1]==2)
 				{//左侧拨杆在最下面是底盘有力
-            if(CHASSIS_ROTATE_SWITCH_KEYMAP || (RemoteDial() == -1.0f && Gimbal.StateMachine == GM_TEST))//小陀螺模式
+            if(CHASSIS_ROTATE_SWITCH_KEYMAP || Chassis_Rotate_Flag || (RemoteDial() == -1.0f && Gimbal.StateMachine == GM_TEST))//小陀螺模式
+			{
                 Chassis.ChassisState=CHASSIS_ROTATE;
+				if(CHASSIS_ROTATE_SWITCH_KEYMAP){
+					Chassis_Rotate_Flag = 0;
+				}
+			}
 			else if(CHASSIS_ROTATE_RESERVE_KEYMAP && Gimbal.StateMachine==GM_TEST)
 				Chassis.ChassisState=CHASSIS_ROTATE_RESERVE;
 						else 
@@ -317,17 +327,22 @@ void SetGimbalDisable(void)
 
 void GimbalControlModeUpdate(void)
 {
-    // 比赛模式下或调试模式
+    //模式切换后标志位自动清零
+	if(Gimbal.ControlMode != GM_AUTO_REVERSE){
+		Yaw_Reverse_Flag = 0;
+		Yaw_reverse_interval = Yaw_reverse_interval<250?Yaw_reverse_interval+1:250;
+	}
+	// 比赛模式下或调试模式
     if(Gimbal.StateMachine==GM_MATCH||Gimbal.StateMachine==GM_TEST)
 		{
         // 如果按下鼠标右键or s[1]=1并且视觉发现目标，进入自瞄控制
         if(((Remote.mouse.press_r==PRESS)||(Remote.rc.s[1]==RC_SW_UP))&&(Offline.AimbotDataNode == DEVICE_ONLINE)&&(Aimbot.AimbotState&AIMBOT_TARGET_INSIDE_OFFSET))
-				{
-					Gimbal.ControlMode = GM_AIMBOT_OPERATE;
-				}
+		{
+			Gimbal.ControlMode = GM_AIMBOT_OPERATE;
+		}
         else{
 			if(GIMBAL_CMD_YAW_RESERVE__KEYMAP){
-				Yaw_Reverse_Flag = (Yaw_Reverse_Flag + 1) % 2;
+				Yaw_Reverse_Flag = Yaw_reverse_interval==250?(Yaw_Reverse_Flag + 1) % 2:0;
 				Reverse_Target_Yaw_Angle = Gimbal.Imu.YawAngle>0?Gimbal.Imu.YawAngle-181:Gimbal.Imu.YawAngle+179;
 			}
 			if(Yaw_Reverse_Flag){
@@ -337,6 +352,7 @@ void GimbalControlModeUpdate(void)
 				}
 				else{
 					Gimbal.ControlMode = GM_AUTO_REVERSE;//yaw轴自动转180度
+					Yaw_reverse_interval = 0;
 				}
 			}
 			else{
@@ -669,7 +685,7 @@ void GimbalCommandUpdate(void)
         Gimbal.Command.Pitch += GIMBAL_CMD_PITCH_KEYMAP;
         Gimbal.Command.Yaw = loop_fp32_constrain(Gimbal.Command.Yaw, Gimbal.Imu.YawAngle - 180.0f, Gimbal.Imu.YawAngle + 180.0f);
         Gimbal.Command.Pitch = fp32_constrain(Gimbal.Command.Pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE);
-        Gimbal.Output.Yaw = cascade_PID_calc(&Gimbal.Pid.Yaw, Gimbal.Imu.YawAngle/*-Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*rotate_yaw_bias*/ , Gimbal.Imu.YawSpeed, Gimbal.Command.Yaw)+Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*100;
+        Gimbal.Output.Yaw = cascade_PID_calc(&Gimbal.Pid.Yaw, Gimbal.Imu.YawAngle-Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*rotate_yaw_bias , Gimbal.Imu.YawSpeed, Gimbal.Command.Yaw);//+Gimbal.MotorMeasure.GimbalMotor.YawMotorSpeed*100;
         Gimbal.Output.Pitch = cascade_PID_calc(&Gimbal.Pid.Pitch, Gimbal.Imu.PitchAngle, Gimbal.Imu.PitchSpeed, Gimbal.Command.Pitch);
 		Gimbal.Output.DaMiao_Pitch = cascade_PID_calc(&Gimbal.Pid.Pitch, Gimbal.Imu.PitchAngle, Gimbal.Imu.PitchSpeed, Gimbal.Command.Pitch);
 //		if(Gimbal.StateMachine ==GM_MATCH) {
@@ -951,9 +967,9 @@ void GetGimbalRequestState(GimbalRequestState_t *RequestState)
 		if(Chassis.ChassisSpeed == CHASSIS_FAST_SPEED){
 			RequestState->ChassisStateRequest |= (uint8_t)(1<<5);
 		}
-		if(CHASSIS_HIGH_SPEED_ROTATE){
-			RequestState->ChassisStateRequest |= (uint8_t)(1<<6);
-		}
+//		if(CHASSIS_ROTATE_KICK_KEYMAP){
+//			RequestState->ChassisStateRequest |= (uint8_t)(1<<6);
+//		}
 		if(Chassis.ChassisState == CHASSIS_ROTATE_RESERVE)
 			RequestState->ChassisStateRequest |= (uint8_t)(1<<7);
     }

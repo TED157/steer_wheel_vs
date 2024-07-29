@@ -19,7 +19,7 @@
 #define PTZ_OFFLINE_TIMEMAX     50
 #define COORDS_TIMEMAX          200
 
-#define PARAMETER_FILE "Setting.h"
+//#define PARAMETER_FILE "Setting.h"
 
 // imu��װ����
 #define IMU_DIRECTION_rzrxy_XYZ
